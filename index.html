@@ -6,8 +6,8 @@
 <title>Atrix — Attendance Register</title>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1B2340">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/icon-192.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -391,24 +391,22 @@ function readFileAsDataURL(file){
 
 async function loadData(){
   try{
-    const empRes = await window.storage.get('employees');
-    employees = empRes ? JSON.parse(empRes.value) : [];
+    const empRaw = localStorage.getItem('atrix_employees');
+    employees = empRaw ? JSON.parse(empRaw) : [];
   }catch(e){ employees = []; }
   try{
-    const attRes = await window.storage.get('attendance');
-    attendance = attRes ? JSON.parse(attRes.value) : {};
+    const attRaw = localStorage.getItem('atrix_attendance');
+    attendance = attRaw ? JSON.parse(attRaw) : {};
   }catch(e){ attendance = {}; }
 }
 async function saveEmployees(){
   try{
-    const r = await window.storage.set('employees', JSON.stringify(employees));
-    if(!r) showToast('Save failed — storage unavailable');
+    localStorage.setItem('atrix_employees', JSON.stringify(employees));
   } catch(e){ showToast('Save failed: ' + e.message); }
 }
 async function saveAttendance(){
   try{
-    const r = await window.storage.set('attendance', JSON.stringify(attendance));
-    if(!r) showToast('Save failed — storage unavailable');
+    localStorage.setItem('atrix_attendance', JSON.stringify(attendance));
   } catch(e){ showToast('Save failed: ' + e.message); }
 }
 
