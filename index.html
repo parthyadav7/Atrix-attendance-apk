@@ -266,117 +266,160 @@ table.summary tbody tr:hover{background:var(--paper);}
 <body>
 <div id="global-loader"><div class="loader-spinner"></div><div class="loader-label">Loading…</div></div>
 <div class="wrap">
+  <header class="hero">
+    <div class="brand-mark">
+      <img src="data:image/jpeg;base64,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" alt="Atrix Logo">
+      <div>
+        <div style="font-family:'Fraunces',serif;font-weight:700;font-size:1.2rem;line-height:1;">Atrix</div>
+        <div class="tag">Attendance Register</div>
+      </div>
+    </div>
+    <div id="user-badge" class="user-badge" style="display:none;">
+      <span id="badge-name" style="font-weight:600;font-size:0.9rem;">—</span>
+      <span id="badge-role" class="role-pill">EMPLOYEE</span>
+      <button class="btn ghost small" onclick="signOut()" style="margin-left:6px;">Logout</button>
+    </div>
+  </header>
+
   <div id="login-view">
     <div class="card">
       <h2 class="section-title">Sign In</h2>
-      <form id="login-form">
-        <div class="field">
-          <label class="field-label">Email</label>
-          <input type="email" id="login-email" required placeholder="you@company.com">
-        </div>
-        <div class="field">
-          <label class="field-label">Password</label>
-          <input type="password" id="login-password" required placeholder="••••••••">
-        </div>
-        <button type="submit" class="btn wide" id="login-btn">Log In</button>
-        <div id="login-error"></div>
-      </form>
+      <div class="field">
+        <label class="field-label">Email Address</label>
+        <input type="email" id="login-email" placeholder="you@company.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label class="field-label">Password</label>
+        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <button class="btn wide" id="login-btn" onclick="signIn()">Sign In</button>
+      <div id="login-error"></div>
     </div>
   </div>
 
   <div id="app-view" style="display:none;">
-    <header class="hero">
-      <div class="brand-mark">
-        <div>
-          <h1 style="margin:0;font-size:1.4rem;font-family:'Fraunces',serif;">Atrix</h1>
-          <span class="tag">Attendance Register</span>
-        </div>
-      </div>
-      <div class="user-badge" id="user-badge" style="display:none;">
-        <span id="user-display" style="font-size:0.85rem;font-weight:600;"></span>
-        <span id="user-role" class="role-pill">Employee</span>
-        <button id="logout-btn" class="btn ghost small">Logout</button>
-      </div>
-    </header>
-
-    <nav class="tabs" id="app-tabs">
-      <button class="tab-btn active" data-tab="attendance">Attendance</button>
-      <button class="tab-btn" data-tab="timesheet">Timesheet</button>
-      <button class="tab-btn admin-only" data-tab="team" style="display:none;">Team</button>
-      <button class="tab-btn admin-only" data-tab="reports" style="display:none;">Reports</button>
+    <nav class="tabs" id="nav-tabs">
+      <button class="active" onclick="switchTab('mark')">Mark Attendance</button>
+      <button id="tab-timesheet" onclick="switchTab('timesheet')">Timesheet</button>
+      <button id="tab-team" onclick="switchTab('team')" style="display:none;">Team</button>
+      <button onclick="switchTab('reports')">Reports</button>
     </nav>
 
-    <div id="attendance-panel" class="panel active">
-      <div class="card status-hero">
-        <div class="status-date" id="current-date">Today</div>
-        <div class="status-badge p" id="my-status-badge">Present</div>
-        <div class="time-line" id="my-times">In: --:-- | Out: --:--</div>
-        <div class="mark-buttons" id="mark-buttons">
-          <button class="btn" id="btn-checkin">Check In</button>
-          <button class="btn ghost" id="btn-checkout">Check Out</button>
+    <div id="panel-mark" class="panel active">
+      <div class="card">
+        <div class="status-hero">
+          <div class="status-date" id="mark-date-label">TODAY</div>
+          <div><span id="status-badge" class="status-badge a">NOT MARKED</span></div>
+          <div id="time-in-line" class="time-line" style="display:none;">In: <strong id="time-in-val">—</strong> <span id="map-in-wrap"></span></div>
+          <div id="time-out-line" class="time-line" style="display:none;">Out: <strong id="time-out-val">—</strong> <span id="map-out-wrap"></span></div>
+          
+          <div class="mark-buttons" id="mark-actions">
+            <button class="btn" id="btn-clock-in" onclick="clockIn()">Clock In</button>
+            <button class="btn ghost" id="btn-clock-out" onclick="clockOut()" disabled>Clock Out</button>
+          </div>
+          <div class="geo-status" id="geo-status"></div>
+          <div class="geo-hint">GPS location will be recorded automatically when clocking in or out.</div>
         </div>
-        <div class="geo-status" id="geo-status"></div>
       </div>
     </div>
 
-    <div id="timesheet-panel" class="panel">
+    <div id="panel-timesheet" class="panel">
       <div class="card">
         <h2 class="section-title">Log Work Entry</h2>
-        <form id="ts-form" class="row-form">
+        <div class="row-form">
           <div class="field-group">
-            <label class="field-label">Date</label>
-            <input type="text" id="ts-date" class="dmy-input" required placeholder="DD-MM-YYYY">
+            <label class="field-label">Date (DD/MM/YYYY)</label>
+            <div class="date-field-wrap">
+              <input type="text" id="ts-date" class="dmy-input" maxlength="10" placeholder="DD/MM/YYYY">
+              <button class="cal-toggle-btn" type="button" onclick="toggleCal('ts-cal-popup')">📅</button>
+              <div id="ts-cal-popup" class="cal-popup hidden"></div>
+            </div>
           </div>
           <div class="field-group">
             <label class="field-label">Start Time</label>
-            <input type="time" id="ts-start" required>
+            <input type="time" id="ts-start" style="width:130px;">
           </div>
           <div class="field-group">
             <label class="field-label">End Time</label>
-            <input type="time" id="ts-end" required>
+            <input type="time" id="ts-end" style="width:130px;">
+          </div>
+        </div>
+        <div class="field-group" style="margin-top:12px;">
+          <label class="field-label">Work Description</label>
+          <input type="text" id="ts-desc" placeholder="What did you work on?">
+        </div>
+        <button class="btn small" style="margin-top:14px;" onclick="addTimesheetEntry()">Save Entry</button>
+      </div>
+
+      <div class="card">
+        <h2 class="section-title">Your Work Log</h2>
+        <div class="range-bar">
+          <button class="range-nav-btn" onclick="shiftTsMonth(-1)">‹</button>
+          <span class="range-label" id="ts-month-label">Month Year</span>
+          <button class="range-nav-btn" onclick="shiftTsMonth(1)">›</button>
+        </div>
+        <div id="ts-list-container"></div>
+      </div>
+    </div>
+
+    <div id="panel-team" class="panel">
+      <div class="card">
+        <h2 class="section-title">Add Team Member</h2>
+        <div class="row-form">
+          <div class="field-group" style="flex:1;min-width:180px;">
+            <label class="field-label">Full Name</label>
+            <input type="text" id="add-emp-name" placeholder="John Doe">
           </div>
           <div class="field-group" style="flex:1;min-width:200px;">
-            <label class="field-label">Description</label>
-            <input type="text" id="ts-desc" required placeholder="What did you work on?">
+            <label class="field-label">Email</label>
+            <input type="email" id="add-emp-email" placeholder="john@company.com">
           </div>
-          <div class="field-group" style="justify-content:flex-end;">
-            <button type="submit" class="btn">Add Entry</button>
+          <div class="field-group" style="flex:1;min-width:140px;">
+            <label class="field-label">Password</label>
+            <input type="password" id="add-emp-pass" placeholder="••••••••">
           </div>
-        </form>
-      </div>
-      <div class="card">
-        <h2 class="section-title">Your Recent Logs</h2>
-        <div id="ts-logs-container">
-          <div class="panel-loading"><div class="loader-spinner"></div>Loading timesheets…</div>
+          <div class="field-group" style="width:130px;">
+            <label class="field-label">Role</label>
+            <select id="add-emp-role">
+              <option value="employee">Employee</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div class="field-group photo-input-wrap" style="flex:1;min-width:180px;">
+            <label class="field-label">Photo (Optional)</label>
+            <input type="file" id="add-emp-photo" accept="image/*">
+          </div>
         </div>
+        <button class="btn small" style="margin-top:14px;" onclick="addTeamMember()">Create User</button>
       </div>
-    </div>
 
-    <div id="team-panel" class="panel">
       <div class="card">
         <h2 class="section-title">Team Members</h2>
-        <ul class="emp-list" id="team-list">
-          <li class="panel-loading"><div class="loader-spinner"></div>Loading team…</li>
-        </ul>
+        <ul id="team-list" class="emp-list"></ul>
       </div>
     </div>
 
-    <div id="reports-panel" class="panel">
+    <div id="panel-reports" class="panel">
       <div class="card">
-        <h2 class="section-title">Summary Report</h2>
-        <div class="period-tabs" id="report-period-tabs">
-          <button class="active" data-period="day">Day</button>
-          <button data-period="week">Week</button>
-          <button data-period="month">Month</button>
+        <div class="period-tabs">
+          <button id="btn-p-daily" onclick="setReportPeriod('daily')">Daily</button>
+          <button id="btn-p-weekly" onclick="setReportPeriod('weekly')">Weekly</button>
+          <button id="btn-p-monthly" class="active" onclick="setReportPeriod('monthly')">Monthly</button>
         </div>
+
         <div class="range-bar">
-          <button class="range-nav-btn" id="report-prev">&larr;</button>
-          <span class="range-label" id="report-range-label">Today</span>
-          <button class="range-nav-btn" id="report-next">&rarr;</button>
+          <button class="range-nav-btn" onclick="shiftReportRange(-1)">‹</button>
+          <span class="range-label" id="report-range-label">—</span>
+          <button class="range-nav-btn" onclick="shiftReportRange(1)">›</button>
+
+          <div id="daily-picker-wrap" class="date-field-wrap" style="display:none;margin-left:10px;">
+            <input type="text" id="report-daily-date" class="dmy-input" maxlength="10">
+            <button class="cal-toggle-btn" type="button" onclick="toggleCal('rep-cal-popup')">📅</button>
+            <div id="rep-cal-popup" class="cal-popup hidden"></div>
+          </div>
         </div>
-        <div id="report-table-container">
-          <div class="panel-loading"><div class="loader-spinner"></div>Generating report…</div>
-        </div>
+
+        <div id="report-summary-container"></div>
       </div>
     </div>
   </div>
@@ -385,181 +428,871 @@ table.summary tbody tr:hover{background:var(--paper);}
 <div id="toast" class="toast"></div>
 
 <script>
-// ---------- SUPABASE SETUP ----------
-const SUPABASE_URL = "https://your-supabase-url.supabase.co";
-const SUPABASE_KEY = "your-anon-key";
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// ---------- SUPABASE INIT ----------
+const SUPABASE_URL = "https://your-supabase-url.supabase.co"; // Replace with your URL
+const SUPABASE_ANON_KEY = "your-anon-key"; // Replace with your Anon Key
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// State Variables
+// State
 let currentUser = null;
 let currentProfile = null;
 let allProfiles = [];
+let reportPeriod = 'monthly'; // daily | weekly | monthly
+let reportAnchorDate = new Date();
+let tsMonthAnchor = new Date();
+let expandedUserLogs = {}; // profile_id -> boolean
 
-// Helper Utilities
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.innerText = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3200);
-}
+// Global calendar state tracking
+let calState = {};
 
-function showLoader(txt) {
+// Helper: DOM Loader
+function showLoader(text="Loading…"){
   const l = document.getElementById('global-loader');
-  if(txt) l.querySelector('.loader-label').innerText = txt;
+  l.querySelector('.loader-label').textContent = text;
   l.classList.add('show');
 }
-
-function hideLoader() {
+function hideLoader(){
   document.getElementById('global-loader').classList.remove('show');
 }
 
-function escapeHtml(str) {
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=> t.classList.remove('show'), 3000);
+}
+
+// Escape HTML
+function escapeHtml(str){
   if(!str) return '';
-  return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-function isoToDMY(iso) {
-  if(!iso) return '';
-  const [y,m,d] = iso.split('-');
-  return `${d}-${m}-${y}`;
+// Date Formatters (DD/MM/YYYY)
+function dateToISO(d){
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
 }
-
-function dmyToISO(dmy) {
-  if(!dmy) return '';
-  const parts = dmy.split('-');
+function isoToDMY(isoStr){
+  if(!isoStr) return '';
+  const parts = isoStr.split('-');
+  if(parts.length !== 3) return isoStr;
+  return `${parts[2]}/${parts[1]}/${parts[0]}`;
+}
+function dmyToISO(dmyStr){
+  if(!dmyStr) return null;
+  const parts = dmyStr.split('/');
   if(parts.length !== 3) return null;
-  const [d,m,y] = parts;
-  if(d.length!==2 || m.length!==2 || y.length!==4) return null;
-  return `${y}-${m}-${d}`;
+  const dd = parseInt(parts[0], 10);
+  const mm = parseInt(parts[1], 10);
+  const yyyy = parseInt(parts[2], 10);
+  if(isNaN(dd) || isNaN(mm) || isNaN(yyyy)) return null;
+  if(dd < 1 || dd > 31 || mm < 1 || mm > 12 || yyyy < 1900 || yyyy > 2100) return null;
+  return `${yyyy}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
 }
-
-function timeToMinutes(t) {
-  if(!t) return 0;
-  const [h,m] = t.split(':').map(Number);
-  return h*60 + m;
+function parseDMYToDate(dmyStr){
+  const iso = dmyToISO(dmyStr);
+  if(!iso) return null;
+  return new Date(iso + 'T00:00:00');
 }
-
-function fmtDuration(mins) {
-  if(mins <= 0) return '0m';
-  const h = Math.floor(mins/60);
-  const m = mins % 60;
-  return h > 0 ? `${h}h ${m}m` : `${m}m`;
-}
-
-function fmtTime12(t) {
-  if(!t) return '--:--';
-  let [h,m] = t.split(':').map(Number);
+function fmtTime12(time24){
+  if(!time24) return '';
+  const parts = time24.split(':');
+  let h = parseInt(parts[0], 10);
+  const m = parts[1];
   const ampm = h >= 12 ? 'PM' : 'AM';
   h = h % 12 || 12;
-  return `${h}:${m < 10 ? '0'+m : m} ${ampm}`;
+  return `${h}:${m} ${ampm}`;
 }
-
-function dayLabel(iso) {
-  const d = new Date(iso);
+function timeToMinutes(t){
+  if(!t) return 0;
+  const p = t.split(':');
+  return parseInt(p[0],10)*60 + parseInt(p[1],10);
+}
+function fmtDuration(mins){
+  if(mins <= 0) return '0m';
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  if(h > 0 && m > 0) return `${h}h ${m}m`;
+  if(h > 0) return `${h}h`;
+  return `${m}m`;
+}
+function dayLabel(isoStr){
+  const d = new Date(isoStr + 'T00:00:00');
   return d.toLocaleDateString('en-US', { weekday: 'short' });
 }
 
-// Global View Controllers
-function showApp(userEmail, role) {
+// Map Link
+function buildMapLink(lat, lng){
+  if(!lat || !lng) return '';
+  return `<a href="https://www.google.com/maps?q=${lat},${lng}" target="_blank" rel="noopener">📍 Map</a>`;
+}
+
+// Setup DMY auto-formatting on text inputs
+function attachDmyInputHandler(inputId, onChangeCallback){
+  const el = document.getElementById(inputId);
+  if(!el) return;
+  el.addEventListener('input', (e)=>{
+    let v = e.target.value.replace(/\D/g, '');
+    if(v.length > 8) v = v.substring(0,8);
+    let formatted = '';
+    if(v.length > 0) formatted += v.substring(0,2);
+    if(v.length >= 3) formatted += '/' + v.substring(2,4);
+    if(v.length >= 5) formatted += '/' + v.substring(4,8);
+    e.target.value = formatted;
+
+    if(formatted.length === 10){
+      if(dmyToISO(formatted)){
+        el.classList.remove('invalid');
+        if(onChangeCallback) onChangeCallback(formatted);
+      } else {
+        el.classList.add('invalid');
+      }
+    } else {
+      el.classList.remove('invalid');
+    }
+  });
+}
+
+// Custom Datepicker Popup Logic
+function toggleCal(popupId){
+  const pop = document.getElementById(popupId);
+  if(!pop) return;
+  const isHidden = pop.classList.contains('hidden');
+  document.querySelectorAll('.cal-popup').forEach(p=> p.classList.add('hidden'));
+  if(isHidden){
+    pop.classList.remove('hidden');
+    renderCalPopup(popupId);
+  }
+}
+
+// Close calendar when clicking outside
+document.addEventListener('click', (e)=>{
+  if(!e.target.closest('.date-field-wrap')){
+    document.querySelectorAll('.cal-popup').forEach(p=> p.classList.add('hidden'));
+  }
+});
+
+function renderCalPopup(popupId){
+  const pop = document.getElementById(popupId);
+  if(!pop) return;
+
+  if(!calState[popupId]){
+    calState[popupId] = { month: new Date().getMonth(), year: new Date().getFullYear() };
+  }
+  const st = calState[popupId];
+
+  // Determine associated input
+  let targetInputId = 'ts-date';
+  if(popupId === 'rep-cal-popup') targetInputId = 'report-daily-date';
+
+  const inputEl = document.getElementById(targetInputId);
+  const selectedIso = dmyToISO(inputEl.value);
+
+  const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+  let yearOptions = '';
+  for(let y=2020; y<=2030; y++){
+    yearOptions += `<option value="${y}" ${y===st.year?'selected':''}>${y}</option>`;
+  }
+
+  let html = `
+    <div class="cal-popup-nav">
+      <button type="button" onclick="changeCalMonth('${popupId}', -1)">‹</button>
+      <div class="cal-popup-title">
+        <span>${monthNames[st.month]}</span>
+        <select onchange="changeCalYear('${popupId}', this.value)">${yearOptions}</select>
+      </div>
+      <button type="button" onclick="changeCalMonth('${popupId}', 1)">›</button>
+    </div>
+    <div class="cal-popup-grid">
+      <div class="dow">Su</div><div class="dow">Mo</div><div class="dow">Tu</div>
+      <div class="dow">We</div><div class="dow">Th</div><div class="dow">Fr</div><div class="dow">Sa</div>
+  `;
+
+  const firstDay = new Date(st.year, st.month, 1).getDay();
+  const daysInMonth = new Date(st.year, st.month+1, 0).getDate();
+  const todayIso = dateToISO(new Date());
+
+  for(let i=0; i<firstDay; i++){
+    html += `<div></div>`;
+  }
+
+  for(let d=1; d<=daysInMonth; d++){
+    const cellDate = new Date(st.year, st.month, d);
+    const cellIso = dateToISO(cellDate);
+    const cellDmy = isoToDMY(cellIso);
+
+    let cls = 'day-btn';
+    if(cellIso === selectedIso) cls += ' selected';
+    if(cellIso === todayIso) cls += ' today-marker';
+
+    html += `<button type="button" class="${cls}" onclick="selectCalDate('${popupId}', '${targetInputId}', '${cellDmy}')">${d}</button>`;
+  }
+
+  html += `</div>`;
+  pop.innerHTML = html;
+}
+
+function changeCalMonth(popupId, delta){
+  let st = calState[popupId];
+  st.month += delta;
+  if(st.month < 0){ st.month = 11; st.year--; }
+  if(st.month > 11){ st.month = 0; st.year++; }
+  renderCalPopup(popupId);
+}
+function changeCalYear(popupId, yearVal){
+  calState[popupId].year = parseInt(yearVal, 10);
+  renderCalPopup(popupId);
+}
+function selectCalDate(popupId, targetInputId, dmyStr){
+  const el = document.getElementById(targetInputId);
+  if(el){
+    el.value = dmyStr;
+    el.classList.remove('invalid');
+    if(targetInputId === 'report-daily-date'){
+      const parsed = parseDMYToDate(dmyStr);
+      if(parsed){
+        reportAnchorDate = parsed;
+        renderReportsPanel();
+      }
+    }
+  }
+  document.getElementById(popupId).classList.add('hidden');
+}
+
+// ---------- AUTH LOGIC ----------
+async function signIn(){
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+  errEl.style.display = 'none';
+
+  if(!email || !pass){
+    errEl.textContent = 'Please enter email and password.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  showLoader('Signing in…');
+  try{
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+    if(error){
+      errEl.textContent = error.message;
+      errEl.style.display = 'block';
+      return;
+    }
+    await onLoggedIn(data.user);
+  } finally {
+    hideLoader();
+  }
+}
+
+async function signOut(){
+  showLoader('Signing out…');
+  try{
+    await sb.auth.signOut();
+    currentUser = null;
+    currentProfile = null;
+    allProfiles = [];
+    document.getElementById('app-view').style.display = 'none';
+    document.getElementById('user-badge').style.display = 'none';
+    document.getElementById('login-view').style.display = 'block';
+  } finally {
+    hideLoader();
+  }
+}
+
+async function onLoggedIn(user){
+  currentUser = user;
+  // Fetch current user profile
+  const { data: prof, error } = await sb.from('profiles').select('*').eq('id', user.id).single();
+  if(error || !prof){
+    showToast('Failed to load profile.');
+    return;
+  }
+  currentProfile = prof;
+
+  // Render header badge
+  document.getElementById('badge-name').textContent = prof.full_name || user.email;
+  const roleEl = document.getElementById('badge-role');
+  roleEl.textContent = prof.role.toUpperCase();
+  if(prof.role === 'admin'){
+    document.getElementById('tab-team').style.display = 'inline-block';
+  } else {
+    document.getElementById('tab-team').style.display = 'none';
+  }
+  document.getElementById('user-badge').style.display = 'flex';
   document.getElementById('login-view').style.display = 'none';
   document.getElementById('app-view').style.display = 'block';
-  document.getElementById('user-badge').style.display = 'flex';
-  document.getElementById('user-display').innerText = userEmail;
-  document.getElementById('user-role').innerText = role || 'Employee';
 
-  if(role === 'admin') {
-    document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'inline-block');
-  } else {
-    document.querySelectorAll('.admin-only').forEach(el => el.style.display = 'none');
-  }
-}
+  // Fetch all profiles if admin or for report names
+  const { data: profs } = await sb.from('profiles').select('*').order('full_name');
+  allProfiles = profs || [];
 
-function showLogin() {
-  document.getElementById('app-view').style.display = 'none';
-  document.getElementById('user-badge').style.display = 'none';
-  document.getElementById('login-view').style.display = 'block';
-}
+  // Init default input values
+  document.getElementById('ts-date').value = isoToDMY(dateToISO(new Date()));
+  document.getElementById('report-daily-date').value = isoToDMY(dateToISO(new Date()));
 
-// Login Form Submit Event
-document.getElementById('login-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const errDiv = document.getElementById('login-error');
-  errDiv.style.display = 'none';
-  
-  const email = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-password').value;
-  const btn = document.getElementById('login-btn');
-
-  btn.disabled = true;
-  btn.innerText = 'Signing In...';
-
-  try {
-    const { data, error } = await sb.auth.signInWithPassword({ email, password });
-    if(error) {
-      errDiv.innerText = error.message;
-      errDiv.style.display = 'block';
-    } else {
-      showToast('Logged in successfully!');
-      await onLoggedIn(data.user);
+  attachDmyInputHandler('ts-date');
+  attachDmyInputHandler('report-daily-date', (dmy)=>{
+    const parsed = parseDMYToDate(dmy);
+    if(parsed){
+      reportAnchorDate = parsed;
+      renderReportsPanel();
     }
-  } catch(err) {
-    errDiv.innerText = 'An error occurred during sign in.';
-    errDiv.style.display = 'block';
-  } finally {
-    btn.disabled = false;
-    btn.innerText = 'Log In';
-  }
-});
-
-// Logout Event
-document.getElementById('logout-btn').addEventListener('click', async () => {
-  await sb.auth.signOut();
-  currentUser = null;
-  currentProfile = null;
-  showLogin();
-  showToast('Logged out');
-});
-
-// Tab Navigation Event
-document.querySelectorAll('nav.tabs button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('nav.tabs button').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    
-    btn.classList.add('active');
-    const target = btn.dataset.tab + '-panel';
-    const panel = document.getElementById(target);
-    if(panel) panel.classList.add('active');
   });
-});
 
-async function onLoggedIn(user) {
-  currentUser = user;
-  const role = user.email.includes('admin') ? 'admin' : 'employee';
-  currentProfile = { email: user.email, role: role };
-  showApp(user.email, role);
+  switchTab('mark');
 }
 
-// ---------- INITIALIZATION ----------
-(async function init() {
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    if(session && session.user) {
-      await onLoggedIn(session.user);
+// ---------- TAB SWITCHING ----------
+function switchTab(tabName){
+  document.querySelectorAll('nav.tabs button').forEach(b=> b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p=> p.classList.remove('active'));
+
+  if(tabName === 'mark'){
+    document.querySelector('nav.tabs button[onclick*="mark"]').classList.add('active');
+    document.getElementById('panel-mark').classList.add('active');
+    renderMarkPanel();
+  } else if(tabName === 'timesheet'){
+    document.getElementById('tab-timesheet').classList.add('active');
+    document.getElementById('panel-timesheet').classList.add('active');
+    renderTimesheetPanel();
+  } else if(tabName === 'team'){
+    document.getElementById('tab-team').classList.add('active');
+    document.getElementById('panel-team').classList.add('active');
+    renderTeamPanel();
+  } else if(tabName === 'reports'){
+    document.querySelector('nav.tabs button[onclick*="reports"]').classList.add('active');
+    document.getElementById('panel-reports').classList.add('active');
+    renderReportsPanel();
+  }
+}
+
+// ---------- MARK ATTENDANCE LOGIC ----------
+async function renderMarkPanel(){
+  const todayStr = dateToISO(new Date());
+  document.getElementById('mark-date-label').textContent = `TODAY (${isoToDMY(todayStr)})`;
+
+  const badge = document.getElementById('status-badge');
+  const inLine = document.getElementById('time-in-line');
+  const outLine = document.getElementById('time-out-line');
+  const btnIn = document.getElementById('btn-clock-in');
+  const btnOut = document.getElementById('btn-clock-out');
+
+  // Query today's record for this user
+  const { data: rec } = await sb.from('attendance')
+    .select('*')
+    .eq('profile_id', currentUser.id)
+    .eq('date', todayStr)
+    .maybeSingle();
+
+  if(!rec){
+    badge.className = 'status-badge a';
+    badge.textContent = 'NOT MARKED';
+    inLine.style.display = 'none';
+    outLine.style.display = 'none';
+    btnIn.disabled = false;
+    btnOut.disabled = true;
+  } else {
+    badge.className = 'status-badge p';
+    badge.textContent = rec.status === 'half_day' ? 'HALF DAY' : 'PRESENT';
+
+    document.getElementById('time-in-val').textContent = fmtTime12(rec.time_in);
+    document.getElementById('map-in-wrap').innerHTML = buildMapLink(rec.latitude_in, rec.longitude_in);
+    inLine.style.display = 'block';
+
+    if(rec.time_out){
+      document.getElementById('time-out-val').textContent = fmtTime12(rec.time_out);
+      document.getElementById('map-out-wrap').innerHTML = buildMapLink(rec.latitude_out, rec.longitude_out);
+      outLine.style.display = 'block';
+      btnIn.disabled = true;
+      btnOut.disabled = true;
     } else {
-      showLogin();
+      outLine.style.display = 'none';
+      btnIn.disabled = true;
+      btnOut.disabled = false;
     }
-  } catch(e) {
-    showLogin();
+  }
+}
+
+function getGeolocation(){
+  return new Promise((resolve)=>{
+    const geoStatus = document.getElementById('geo-status');
+    if(!navigator.geolocation){
+      if(geoStatus){ geoStatus.className = 'geo-status error'; geoStatus.textContent = 'Geolocation not supported by browser.'; }
+      resolve(null);
+      return;
+    }
+    if(geoStatus){ geoStatus.className = 'geo-status working'; geoStatus.textContent = 'Fetching location…'; }
+    navigator.geolocation.getCurrentPosition(
+      (pos)=>{
+        if(geoStatus){ geoStatus.textContent = ''; }
+        resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      },
+      (err)=>{
+        if(geoStatus){ geoStatus.className = 'geo-status error'; geoStatus.textContent = 'Location access denied or unavailable.'; }
+        resolve(null);
+      },
+      { timeout: 8000, enableHighAccuracy: true }
+    );
+  });
+}
+
+async function clockIn(){
+  const loc = await getGeolocation();
+  const todayStr = dateToISO(new Date());
+  const now = new Date();
+  const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:00`;
+
+  showLoader('Clocking in…');
+  try{
+    const payload = {
+      profile_id: currentUser.id,
+      date: todayStr,
+      time_in: timeStr,
+      status: 'present',
+      latitude_in: loc ? loc.lat : null,
+      longitude_in: loc ? loc.lng : null
+    };
+
+    const { error } = await sb.from('attendance').upsert(payload, { onConflict: 'profile_id,date' });
+    if(error){ showToast('Error: ' + error.message); return; }
+    showToast('Clocked in successfully!');
+    await renderMarkPanel();
+  } finally {
+    hideLoader();
+  }
+}
+
+async function clockOut(){
+  const loc = await getGeolocation();
+  const todayStr = dateToISO(new Date());
+  const now = new Date();
+  const timeStr = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:00`;
+
+  showLoader('Clocking out…');
+  try{
+    const payload = {
+      time_out: timeStr,
+      latitude_out: loc ? loc.lat : null,
+      longitude_out: loc ? loc.lng : null
+    };
+
+    const { error } = await sb.from('attendance')
+      .update(payload)
+      .eq('profile_id', currentUser.id)
+      .eq('date', todayStr);
+
+    if(error){ showToast('Error: ' + error.message); return; }
+    showToast('Clocked out successfully!');
+    await renderMarkPanel();
+  } finally {
+    hideLoader();
+  }
+}
+
+// ---------- TIMESHEET LOGIC ----------
+async function addTimesheetEntry(){
+  const dmy = document.getElementById('ts-date').value.trim();
+  const start = document.getElementById('ts-start').value;
+  const end = document.getElementById('ts-end').value;
+  const desc = document.getElementById('ts-desc').value.trim();
+
+  const isoDate = dmyToISO(dmy);
+  if(!isoDate){ showToast('Please enter a valid date (DD/MM/YYYY)'); return; }
+  if(!start || !end){ showToast('Please provide start and end times'); return; }
+  if(start >= end){ showToast('End time must be after start time'); return; }
+  if(!desc){ showToast('Please enter a description'); return; }
+
+  showLoader('Saving entry…');
+  try{
+    const { error } = await sb.from('timesheets').insert({
+      profile_id: currentUser.id,
+      date: isoDate,
+      start_time: start,
+      end_time: end,
+      work_description: desc
+    });
+    if(error){ showToast('Could not save: ' + error.message); return; }
+    showToast('Entry saved!');
+    document.getElementById('ts-desc').value = '';
+    renderTimesheetPanel();
+  } finally {
+    hideLoader();
+  }
+}
+
+function shiftTsMonth(delta){
+  tsMonthAnchor.setMonth(tsMonthAnchor.getMonth() + delta);
+  renderTimesheetPanel();
+}
+
+async function renderTimesheetPanel(){
+  const yr = tsMonthAnchor.getFullYear();
+  const mo = tsMonthAnchor.getMonth();
+  const mName = tsMonthAnchor.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  document.getElementById('ts-month-label').textContent = mName;
+
+  const startIso = dateToISO(new Date(yr, mo, 1));
+  const endIso = dateToISO(new Date(yr, mo + 1, 0));
+
+  const container = document.getElementById('ts-list-container');
+  container.innerHTML = `<div class="panel-loading"><div class="loader-spinner"></div>Loading timesheets…</div>`;
+
+  const { data: logs, error } = await sb.from('timesheets')
+    .select('*')
+    .eq('profile_id', currentUser.id)
+    .gte('date', startIso)
+    .lte('date', endIso)
+    .order('date', { ascending: false });
+
+  if(error){ container.innerHTML = `<div class="empty-state">Error loading timesheets</div>`; return; }
+  if(!logs || logs.length === 0){
+    container.innerHTML = `<div class="empty-state">No work entries for ${mName}</div>`;
+    return;
+  }
+
+  let html = `<div class="log-list">`;
+  logs.forEach(r=>{
+    const durMins = timeToMinutes(r.end_time) - timeToMinutes(r.start_time);
+    html += `
+      <div class="log-row">
+        <div class="log-date-line">
+          <span class="log-date">${isoToDMY(r.date)} · ${dayLabel(r.date)}</span>
+          <div>
+            <span class="count-pill p">${fmtDuration(durMins)}</span>
+            <button class="icon-btn del-ts-btn" data-id="${r.id}" style="display:inline-flex;width:24px;height:24px;font-size:0.7rem;margin-left:8px;">✕</button>
+          </div>
+        </div>
+        <div class="log-times">${fmtTime12(r.start_time)} – ${fmtTime12(r.end_time)} — ${escapeHtml(r.work_description)}</div>
+      </div>
+    `;
+  });
+  html += `</div>`;
+  container.innerHTML = html;
+
+  container.querySelectorAll('.del-ts-btn').forEach(b=>{
+    b.addEventListener('click', async (e)=>{
+      if(!confirm('Delete this entry?')) return;
+      const id = b.dataset.id;
+      const { error } = await sb.from('timesheets').delete().eq('id', id);
+      if(error){ showToast('Delete failed: ' + error.message); return; }
+      renderTimesheetPanel();
+    });
+  });
+}
+
+// ---------- TEAM PANEL LOGIC (ADMIN) ----------
+async function renderTeamPanel(){
+  const listEl = document.getElementById('team-list');
+  listEl.innerHTML = `<div class="panel-loading"><div class="loader-spinner"></div>Loading team…</div>`;
+
+  const { data: profs, error } = await sb.from('profiles').select('*').order('full_name');
+  if(error){ listEl.innerHTML = `<div class="empty-state">Error loading team</div>`; return; }
+  allProfiles = profs || [];
+
+  if(profs.length === 0){
+    listEl.innerHTML = `<div class="empty-state">No team members found</div>`;
+    return;
+  }
+
+  let html = '';
+  profs.forEach(p=>{
+    const avatarContent = p.avatar_url ? 
+      `<img src="${p.avatar_url}" class="avatar">` : 
+      `<div class="avatar" style="background:var(--brand);">${(p.full_name||'U').charAt(0).toUpperCase()}</div>`;
+
+    html += `
+      <li id="emp-li-${p.id}">
+        <div class="emp-identity">
+          ${avatarContent}
+          <div>
+            <div class="emp-name">${escapeHtml(p.full_name)}</div>
+            <div class="emp-meta">${escapeHtml(p.email || '')} · <span style="text-transform:uppercase">${p.role}</span></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn ghost small" onclick="toggleEditEmp('${p.id}')">Edit</button>
+        </div>
+        <div id="edit-box-${p.id}" class="edit-form" style="display:none;">
+          <div class="field-group" style="flex:1;">
+            <label class="field-label">Name</label>
+            <input type="text" id="edit-name-${p.id}" value="${escapeHtml(p.full_name)}">
+          </div>
+          <div class="field-group" style="width:120px;">
+            <label class="field-label">Role</label>
+            <select id="edit-role-${p.id}">
+              <option value="employee" ${p.role==='employee'?'selected':''}>Employee</option>
+              <option value="admin" ${p.role==='admin'?'selected':''}>Admin</option>
+            </select>
+          </div>
+          <button class="btn small" onclick="saveEmpEdit('${p.id}')">Save</button>
+          <button class="btn ghost small" onclick="toggleEditEmp('${p.id}')">Cancel</button>
+        </div>
+      </li>
+    `;
+  });
+  listEl.innerHTML = html;
+}
+
+function toggleEditEmp(id){
+  const box = document.getElementById(`edit-box-${id}`);
+  if(box) box.style.display = box.style.display === 'none' ? 'flex' : 'none';
+}
+
+async function saveEmpEdit(id){
+  const name = document.getElementById(`edit-name-${id}`).value.trim();
+  const role = document.getElementById(`edit-role-${id}`).value;
+  if(!name){ showToast('Name cannot be empty.'); return; }
+
+  showLoader('Updating user…');
+  try{
+    const { error } = await sb.from('profiles').update({ full_name: name, role: role }).eq('id', id);
+    if(error){ showToast('Error: ' + error.message); return; }
+    showToast('User updated successfully.');
+    renderTeamPanel();
+  } finally {
+    hideLoader();
+  }
+}
+
+async function addTeamMember(){
+  const name = document.getElementById('add-emp-name').value.trim();
+  const email = document.getElementById('add-emp-email').value.trim();
+  const pass = document.getElementById('add-emp-pass').value;
+  const role = document.getElementById('add-emp-role').value;
+  const photoFile = document.getElementById('add-emp-photo').files[0];
+
+  if(!name || !email || !pass){
+    showToast('Name, Email and Password are required.');
+    return;
+  }
+
+  showLoader('Creating team member…');
+  try{
+    // Note: Creating user via supabase auth signup or secondary client
+    const { data: authData, error: authErr } = await sb.auth.signUp({
+      email,
+      password: pass,
+      options: { data: { full_name: name, role: role } }
+    });
+
+    if(authErr){ showToast('Auth Error: ' + authErr.message); return; }
+    if(!authData.user){ showToast('Could not create auth user.'); return; }
+
+    let avatarUrl = null;
+    if(photoFile){
+      const fileExt = photoFile.name.split('.').pop();
+      const filePath = `${authData.user.id}-${Date.now()}.${fileExt}`;
+      const { error: uploadErr } = await sb.storage.from('avatars').upload(filePath, photoFile);
+      if(!uploadErr){
+        const { data: pubUrl } = sb.storage.from('avatars').getPublicUrl(filePath);
+        avatarUrl = pubUrl.publicUrl;
+      }
+    }
+
+    // Insert or update profile record
+    const { error: profErr } = await sb.from('profiles').upsert({
+      id: authData.user.id,
+      full_name: name,
+      email: email,
+      role: role,
+      avatar_url: avatarUrl
+    });
+
+    if(profErr){ showToast('Profile insert error: ' + profErr.message); return; }
+
+    showToast('Team member added!');
+    document.getElementById('add-emp-name').value = '';
+    document.getElementById('add-emp-email').value = '';
+    document.getElementById('add-emp-pass').value = '';
+    document.getElementById('add-emp-photo').value = '';
+    renderTeamPanel();
+  } finally {
+    hideLoader();
+  }
+}
+
+// ---------- REPORTS PANEL LOGIC ----------
+function setReportPeriod(period){
+  reportPeriod = period;
+  document.getElementById('btn-p-daily').classList.toggle('active', period === 'daily');
+  document.getElementById('btn-p-weekly').classList.toggle('active', period === 'weekly');
+  document.getElementById('btn-p-monthly').classList.toggle('active', period === 'monthly');
+
+  document.getElementById('daily-picker-wrap').style.display = (period === 'daily') ? 'inline-block' : 'none';
+  renderReportsPanel();
+}
+
+function shiftReportRange(delta){
+  if(reportPeriod === 'daily'){
+    reportAnchorDate.setDate(reportAnchorDate.getDate() + delta);
+    document.getElementById('report-daily-date').value = isoToDMY(dateToISO(reportAnchorDate));
+  } else if(reportPeriod === 'weekly'){
+    reportAnchorDate.setDate(reportAnchorDate.getDate() + (delta * 7));
+  } else if(reportPeriod === 'monthly'){
+    reportAnchorDate.setMonth(reportAnchorDate.getMonth() + delta);
+  }
+  renderReportsPanel();
+}
+
+function getReportDateRange(){
+  const d = new Date(reportAnchorDate);
+  if(reportPeriod === 'daily'){
+    const iso = dateToISO(d);
+    return { startIso: iso, endIso: iso, label: isoToDMY(iso) };
+  } else if(reportPeriod === 'weekly'){
+    const day = d.getDay();
+    const diffToMon = d.getDate() - day + (day === 0 ? -6 : 1);
+    const mon = new Date(d.setDate(diffToMon));
+    const sun = new Date(mon);
+    sun.setDate(mon.getDate() + 6);
+    const startIso = dateToISO(mon);
+    const endIso = dateToISO(sun);
+    return { startIso, endIso, label: `${isoToDMY(startIso)} – ${isoToDMY(endIso)}` };
+  } else {
+    const yr = d.getFullYear();
+    const mo = d.getMonth();
+    const startIso = dateToISO(new Date(yr, mo, 1));
+    const endIso = dateToISO(new Date(yr, mo + 1, 0));
+    const label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    return { startIso, endIso, label };
+  }
+}
+
+async function renderReportsPanel(){
+  const { startIso, endIso, label } = getReportDateRange();
+  document.getElementById('report-range-label').textContent = label;
+
+  const container = document.getElementById('report-summary-container');
+  container.innerHTML = `<div class="panel-loading"><div class="loader-spinner"></div>Loading report…</div>`;
+
+  // Determine targeted users (Admins see all profiles, employees see themselves)
+  let targetProfiles = currentProfile.role === 'admin' ? allProfiles : [currentProfile];
+  if(targetProfiles.length === 0) targetProfiles = [currentProfile];
+
+  // Fetch attendance for period
+  const { data: attData } = await sb.from('attendance')
+    .select('*')
+    .gte('date', startIso)
+    .lte('date', endIso);
+
+  // Fetch timesheets for period
+  const { data: tsData } = await sb.from('timesheets')
+    .select('*')
+    .gte('date', startIso)
+    .lte('date', endIso);
+
+  const attList = attData || [];
+  const tsList = tsData || [];
+
+  let html = `
+    <table class="summary">
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th style="text-align:center;">Present</th>
+          <th style="text-align:center;">Half Day</th>
+          <th style="text-align:center;">Logged Hours</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  targetProfiles.forEach(p=>{
+    const userAtt = attList.filter(a=> a.profile_id === p.id);
+    const userTs = tsList.filter(t=> t.profile_id === p.id);
+
+    const presentCount = userAtt.filter(a=> a.status === 'present').length;
+    const halfCount = userAtt.filter(a=> a.status === 'half_day').length;
+
+    let totalMins = 0;
+    userTs.forEach(t=>{
+      totalMins += (timeToMinutes(t.end_time) - timeToMinutes(t.start_time));
+    });
+
+    const isExpanded = !!expandedUserLogs[p.id];
+
+    html += `
+      <tr>
+        <td>
+          <div class="name-cell" onclick="toggleUserLogExpand('${p.id}')">
+            <span style="font-weight:600;">${escapeHtml(p.full_name)}</span>
+            <span class="expand-hint">${isExpanded ? '▲ Hide Log' : '▼ View Log'}</span>
+          </div>
+        </td>
+        <td style="text-align:center;"><span class="count-pill p">${presentCount}</span></td>
+        <td style="text-align:center;"><span class="count-pill h">${halfCount}</span></td>
+        <td style="text-align:center;font-family:'JetBrains Mono',monospace;">${fmtDuration(totalMins)}</td>
+      </tr>
+    `;
+
+    if(isExpanded){
+      html += `
+        <tr class="emp-log-row">
+          <td colspan="4">
+            ${renderTsListHtml(userTs, p.full_name)}
+          </td>
+        </tr>
+      `;
+    }
+  });
+
+  html += `</tbody></table>`;
+  container.innerHTML = html;
+}
+
+function toggleUserLogExpand(profId){
+  expandedUserLogs[profId] = !expandedUserLogs[profId];
+  renderReportsPanel();
+}
+
+function renderTsListHtml(recs, name){
+  const sorted = recs.slice().sort((a,b)=> b.date.localeCompare(a.date) || a.start_time.localeCompare(b.start_time));
+  let html = `<div class="emp-log-inner"><div class="log-list">`;
+  if(sorted.length === 0){
+    html += `<div class="log-empty">No work entries logged for ${escapeHtml(name)} in this period.</div>`;
+  } else {
+    sorted.forEach(r=>{
+      html += `
+        <div class="log-row">
+          <div class="log-date-line">
+            <span class="log-date">${isoToDMY(r.date)} · ${dayLabel(r.date)}</span>
+            <span class="count-pill p">${fmtDuration(timeToMinutes(r.end_time) - timeToMinutes(r.start_time))}</span>
+          </div>
+          <div class="log-times">${fmtTime12(r.start_time)} – ${fmtTime12(r.end_time)} — ${escapeHtml(r.work_description)}</div>
+        </div>
+      `;
+    });
+  }
+  html += `</div></div>`;
+  return html;
+}
+
+// ---------- INIT ----------
+(async function init(){
+  showLoader('Loading…');
+  try{
+    const { data: { session } } = await sb.auth.getSession();
+    if(session && session.user){
+      await onLoggedIn(session.user);
+    }
+  } finally {
+    hideLoader();
   }
 })();
 
-// Session sync listener
-sb.auth.onAuthStateChange((event) => {
-  if(event === 'SIGNED_OUT') {
-    currentUser = null;
-    currentProfile = null;
-    showLogin();
+// Keep login/dashboard view synced on auth state change
+sb.auth.onAuthStateChange((event)=>{
+  if(event === 'SIGNED_OUT'){
+    currentUser = null; currentProfile = null; allProfiles = [];
+    document.getElementById('app-view').style.display = 'none';
+    document.getElementById('user-badge').style.display = 'none';
+    document.getElementById('login-view').style.display = 'block';
   }
 });
 </script>
