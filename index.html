@@ -1513,92 +1513,78 @@ function closeExportModal() {
 }
 
 // PDF Export Trigger Function
-function triggerPDFExport() {
+// Dynamic PDF Export Function with Real App Data
+async function triggerPDFExport() {
   const timeframe = document.getElementById('exportTimeframe').value;
   
-  // Real App Data placeholders
-  const reportData = [
-    { name: "Rahul Sharma", date: "22/07/2026", time: "09:30 AM", coords: "19.0760° N, 72.8777° E" }
-  ];
+  // 1. Current Logged-in User ka Name
+  const userRoleEl = document.getElementById('user-role');
+  const userName = userRoleEl ? userRoleEl.textContent : "Employee";
 
-  const timesheetData = [
-    { name: "Rahul Sharma", date: "22/07/2026", fromTo: "09:30 AM - 06:30 PM", work: "App Development" }
-  ];
+  // 2. Real Timesheet Logs (DOM se read kar rahe hain)
+  const timesheetRows = Array.from(document.querySelectorAll('#ts-own-list .log-row'));
+  const timesheetData = timesheetRows.map(row => {
+    const date = row.querySelector('.log-date')?.textContent || 'N/A';
+    const time = row.querySelector('.log-times')?.textContent || 'N/A';
+    return { name: userName, date: date, fromTo: time, work: "Logged Entry" };
+  });
 
-  const expenseData = [
-    { name: "Rahul Sharma", date: "22/07/2026", item: "Travel Expense", amount: "₹450", extra: "Taxi Bill" }
-  ];
+  // 3. Real Expense Logs (DOM se read kar rahe hain)
+  const expenseRows = Array.from(document.querySelectorAll('#expense-own-list .log-row'));
+  const expenseData = expenseRows.map(row => {
+    const date = row.querySelector('.log-date')?.textContent || 'N/A';
+    const item = row.querySelector('.log-item')?.textContent || 'Expense';
+    const amount = row.querySelector('.log-amount')?.textContent || '₹0';
+    return { name: userName, date: date, item: item, amount: amount, extra: "-" };
+  });
 
+  // Dynamic Template
   const pdfTemplate = `
     <div style="font-family: Arial, sans-serif; padding: 20px; color: #1B2340;">
       <div style="background: #1B2340; color: #fff; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
         <h1 style="margin:0; font-size: 20px;">Atrix — Master Summary Report</h1>
-        <p style="margin: 4px 0 0; font-size: 12px; color: #F5A623;">Selected Filter: ${timeframe.toUpperCase()}</p>
+        <p style="margin: 4px 0 0; font-size: 12px; color: #F5A623;">
+          Employee: <b>${userName}</b> | Filter: ${timeframe.toUpperCase()}
+        </p>
       </div>
 
-      <h3 style="color: #1B2340; border-bottom: 2px solid #1B2340; padding-bottom: 4px; margin-top: 20px;">1. Reports (Location & Attendance)</h3>
+      <h3 style="color: #1B2340; border-bottom: 2px solid #1B2340; padding-bottom: 4px; margin-top: 20px;">1. Timesheet Entries</h3>
       <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 11px;">
         <thead>
           <tr style="background: #E3DFD3; text-align: left;">
-            <th style="padding: 6px; border: 1px solid #ccc;">Employee Name</th>
-            <th style="padding: 6px; border: 1px solid #ccc;">Date & Time</th>
-            <th style="padding: 6px; border: 1px solid #ccc;">Location Coordinates</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${reportData.map(r => `
-            <tr>
-              <td style="padding: 6px; border: 1px solid #ccc;"><b>${r.name}</b></td>
-              <td style="padding: 6px; border: 1px solid #ccc;">${r.date}, ${r.time}</td>
-              <td style="padding: 6px; border: 1px solid #ccc;">${r.coords}</td>
-            </tr>
-          `).join('')}
-        </tbody>
-      </table>
-
-      <h3 style="color: #1B2340; border-bottom: 2px solid #1B2340; padding-bottom: 4px; margin-top: 20px;">2. Timesheet (Work Hours & Work Done)</h3>
-      <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 11px;">
-        <thead>
-          <tr style="background: #E3DFD3; text-align: left;">
-            <th style="padding: 6px; border: 1px solid #ccc;">Employee Name</th>
+            <th style="padding: 6px; border: 1px solid #ccc;">Employee</th>
             <th style="padding: 6px; border: 1px solid #ccc;">Date</th>
-            <th style="padding: 6px; border: 1px solid #ccc;">From - To Time</th>
-            <th style="padding: 6px; border: 1px solid #ccc;">Work Done</th>
+            <th style="padding: 6px; border: 1px solid #ccc;">Timing</th>
           </tr>
         </thead>
         <tbody>
-          ${timesheetData.map(t => `
+          ${timesheetData.length > 0 ? timesheetData.map(t => `
             <tr>
               <td style="padding: 6px; border: 1px solid #ccc;"><b>${t.name}</b></td>
               <td style="padding: 6px; border: 1px solid #ccc;">${t.date}</td>
               <td style="padding: 6px; border: 1px solid #ccc;">${t.fromTo}</td>
-              <td style="padding: 6px; border: 1px solid #ccc;">${t.work}</td>
             </tr>
-          `).join('')}
+          `).join('') : `<tr><td colspan="3" style="padding: 8px; text-align:center;">No timesheet entries found</td></tr>`}
         </tbody>
       </table>
 
-      <h3 style="color: #1B2340; border-bottom: 2px solid #1B2340; padding-bottom: 4px; margin-top: 20px;">3. Expense Logs</h3>
+      <h3 style="color: #1B2340; border-bottom: 2px solid #1B2340; padding-bottom: 4px; margin-top: 20px;">2. Expense Logs</h3>
       <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 11px;">
         <thead>
           <tr style="background: #E3DFD3; text-align: left;">
-            <th style="padding: 6px; border: 1px solid #ccc;">Employee Name</th>
-            <th style="padding: 6px; border: 1px solid #ccc;">Date</th>
-            <th style="padding: 6px; border: 1px solid #ccc;">Item Name</th>
+            <th style="padding: 6px; border: 1px solid #ccc;">Employee</th>
+            <th style="padding: 6px; border: 1px solid #ccc;">Date / Details</th>
             <th style="padding: 6px; border: 1px solid #ccc;">Amount</th>
-            <th style="padding: 6px; border: 1px solid #ccc;">Extra Details</th>
           </tr>
         </thead>
         <tbody>
-          ${expenseData.map(e => `
+          ${expenseData.length > 0 ? expenseData.map(e => `
             <tr>
               <td style="padding: 6px; border: 1px solid #ccc;"><b>${e.name}</b></td>
-              <td style="padding: 6px; border: 1px solid #ccc;">${e.date}</td>
-              <td style="padding: 6px; border: 1px solid #ccc;">${e.item}</td>
+              <td style="padding: 6px; border: 1px solid #ccc;">${e.date} (${e.item})</td>
               <td style="padding: 6px; border: 1px solid #ccc;"><b>${e.amount}</b></td>
-              <td style="padding: 6px; border: 1px solid #ccc;">${e.extra}</td>
             </tr>
-          `).join('')}
+          `).join('') : `<tr><td colspan="3" style="padding: 8px; text-align:center;">No expense entries found</td></tr>`}
         </tbody>
       </table>
 
@@ -1610,7 +1596,7 @@ function triggerPDFExport() {
 
   const opt = {
     margin:       8,
-    filename:     `Atrix_Report_${timeframe}.pdf`,
+    filename:     `Atrix_Report_${userName}_${timeframe}.pdf`,
     image:        { type: 'jpeg', quality: 0.98 },
     html2canvas:  { scale: 2 },
     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
