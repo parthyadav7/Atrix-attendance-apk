@@ -531,6 +531,9 @@ async function renderAttendancePanel(){
     if(row.corrected_from_check_in_time){
       html += `<div class="time-line" style="opacity:0.6;">Checked in at ${fmtTime(row.corrected_from_check_in_time)} — <a href="${mapLink(row.corrected_from_check_in_lat,row.corrected_from_check_in_lng)}" target="_blank" rel="noopener">view location</a></div>`;
     }
+    if(row.corrected_from_check_out_time){
+      html += `<div class="time-line" style="opacity:0.6;">Checked out at ${fmtTime(row.corrected_from_check_out_time)} — <a href="${mapLink(row.corrected_from_check_out_lat,row.corrected_from_check_out_lng)}" target="_blank" rel="noopener">view location</a></div>`;
+    }
     html += `<div class="field-hint" style="margin:6px 0 14px;">Corrected to:</div>`;
   }
 
@@ -607,6 +610,9 @@ async function correctStatus(newStatus){
     corrected_from_check_in_time: todaysRow.check_in_time,
     corrected_from_check_in_lat: todaysRow.check_in_lat,
     corrected_from_check_in_lng: todaysRow.check_in_lng,
+    corrected_from_check_out_time: todaysRow.check_out_time,
+    corrected_from_check_out_lat: todaysRow.check_out_lat,
+    corrected_from_check_out_lng: todaysRow.check_out_lng,
     check_out_time: null,
     check_out_lat: null,
     check_out_lng: null
@@ -918,6 +924,10 @@ async function renderReportsTab(){
           html += `<div class="log-row"><div class="log-date-line"><span class="log-date">${isoToDMY(r.date)} · ${dayLabel(r.date)}</span><span class="count-pill ${r.status.toLowerCase()}">${statusWord(r.status)}</span></div>`;
           if(r.corrected_from){
             html += `<div class="log-times" style="margin-bottom:2px;"><s style="opacity:0.6;">${statusWord(r.corrected_from)}</s> → corrected</div>`;
+            const oldParts = [];
+            if(r.corrected_from_check_in_time) oldParts.push(`In ${fmtTime(r.corrected_from_check_in_time)} · <a href="${mapLink(r.corrected_from_check_in_lat,r.corrected_from_check_in_lng)}" target="_blank" rel="noopener">map</a>`);
+            if(r.corrected_from_check_out_time) oldParts.push(`Out ${fmtTime(r.corrected_from_check_out_time)} · <a href="${mapLink(r.corrected_from_check_out_lat,r.corrected_from_check_out_lng)}" target="_blank" rel="noopener">map</a>`);
+            if(oldParts.length) html += `<div class="log-times" style="opacity:0.6;margin-bottom:4px;">${oldParts.join(' &nbsp;|&nbsp; ')}</div>`;
           }
           const timeParts = [];
           if(r.check_in_time) timeParts.push(`In ${fmtTime(r.check_in_time)} · <a href="${mapLink(r.check_in_lat,r.check_in_lng)}" target="_blank" rel="noopener">map</a>`);
@@ -1149,4 +1159,3 @@ if ("serviceWorker" in navigator) {
 </script>
 </body>
 </html>
-
