@@ -1407,4 +1407,51 @@ async function renderTimesheetPanel(){
     listEl.querySelectorAll('.ts-delete-link').forEach(a=>{
       a.addEventListener('click', async (e)=>{
         e.preventDefault();
-        if(!confirm('Delete this wor
+        if(!confirm('Delete this work entry?')) return;
+        const { error } = await sb.from('timesheets').delete().eq('id', a.dataset.id);
+        if(error){ showToast('Could not delete: ' + error.message); return; }
+        renderTimesheetPanel();
+      });
+    });
+  }
+}
+
+function renderTsListHtml(recs, name){
+  const sorted = recs.slice().sort((a,b)=> b.date.localeCompare(a.date) || a.start_time.localeCompare(b.start_time));
+  let html = `<div class="emp-log-inner"><div class="log-list">`;
+  if(sorted.length === 0){
+    html += `<div class="log-empty">No work entries logged for ${escapeHtml(name)} in this period.</div>`;
+  } else {
+    sorted.forEach(r=>{
+      html += `
+        <div class="log-row">
+          <div class="log-date-line">
+            <span class="log-date">${isoToDMY(r.date)} · ${dayLabel(r.date)}</span>
+            <span class="count-pill p">${fmtDuration(timeToMinutes(r.end_time) - timeToMinutes(r.start_time))}</span>
+          </div>
+          <div class="log-times">${fmtTime12(r.start_time)} – ${fmtTime12(r.end_time)} — ${escapeHtml(r.work_description)}</div>
+        </div>
+      `;
+    });
+  }
+  html += `</div></div>`;
+  return html;
+}
+
+// ---------- INIT ----------
+(async function init(){
+  const { data: { session } } = await sb.auth.getSession();
+  if(session && session.user){
+    await onLoggedIn(session.user);
+  }
+})();
+</script>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js").catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
