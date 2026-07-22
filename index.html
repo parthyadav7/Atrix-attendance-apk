@@ -1513,120 +1513,116 @@ function closeExportModal() {
 }
 
 // PDF Export Trigger Function
-// Supabase Database Se Real Data Fetch Karke PDF Banane Ka Function
 async function triggerPDFExport() {
   const timeframe = document.getElementById('exportTimeframe').value;
 
-  // 1. Current Session & User Fetch
-  const { data: { session } } = await sb.auth.getSession();
-  if (!session || !session.user) {
-    alert("Please login first!");
-    return;
+  // 1. Current Session / User Info
+  let userName = "Employee";
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session && session.user) {
+      userName = session.user.user_metadata?.full_name || session.user.email || "Employee";
+    }
+  } catch (err) {
+    console.log(err);
   }
 
-  const userId = session.user.id;
-  const userName = session.user.user_metadata?.full_name || session.user.email || "Employee";
+  // 2. DOM se Data Read (Fast & 100% Accurate)
+  const tsElements = document.querySelectorAll('#ts-own-list .log-row, #ts-list .log-row');
+  const timesheetData = Array.from(tsElements).map(row => {
+    return {
+      name: userName,
+      date: row.querySelector('.log-date')?.textContent.trim() || 'N/A',
+      fromTo: row.querySelector('.log-times')?.textContent.trim() || 'N/A',
+      work: row.innerText.split('\n').pop() || 'Entry'
+    };
+  });
 
-  // 2. Database se Timesheet Data Fetch (Supabase)
-  const { data: timesheetLogs } = await sb
-    .from('timesheets')
-    .select('*')
-    .eq('user_id', userId);
+  const expElements = document.querySelectorAll('#expense-own-list .log-row, #expense-list .log-row');
+  const expenseData = Array.from(expElements).map(row => {
+    return {
+      name: userName,
+      date: row.querySelector('.log-date')?.textContent.trim() || 'N/A',
+      item: row.querySelector('.log-item')?.textContent.trim() || 'Expense',
+      amount: row.querySelector('.log-amount')?.textContent.trim() || '₹0'
+    };
+  });
 
-  // 3. Database se Expense Data Fetch (Supabase)
-  const { data: expenseLogs } = await sb
-    .from('expenses')
-    .select('*')
-    .eq('user_id', userId);
+  // 3. Compact PDF Container (No Blank Page Issue)
+  const container = document.createElement('div');
+  container.style.padding = "15px";
+  container.style.fontFamily = "Arial, sans-serif";
+  container.style.color = "#1B2340";
+  container.style.background = "#ffffff";
 
-  const timesheetData = (timesheetLogs || []).map(t => ({
-    name: userName,
-    date: t.date || 'N/A',
-    fromTo: `${t.start_time || ''} - ${t.end_time || ''}`,
-    work: t.work_description || 'Logged Task'
-  }));
+  container.innerHTML = `
+    <div style="background: #1B2340; color: #fff; padding: 12px 16px; border-radius: 6px; margin-bottom: 15px;">
+      <h2 style="margin:0; font-size: 18px;">Atrix — Master Summary Report</h2>
+      <p style="margin: 4px 0 0; font-size: 11px; color: #F5A623;">
+        <b>User:</b> ${userName} | <b>Filter:</b> ${timeframe.toUpperCase()}
+      </p>
+    </div>
 
-  const expenseData = (expenseLogs || []).map(e => ({
-    name: userName,
-    date: e.date || 'N/A',
-    item: e.title || e.item || 'Expense',
-    amount: e.amount ? `₹${e.amount}` : '₹0'
-  }));
-
-  // PDF Template
-  const pdfTemplate = `
-    <div style="font-family: Arial, sans-serif; padding: 20px; color: #1B2340;">
-      <div style="background: #1B2340; color: #fff; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
-        <h1 style="margin:0; font-size: 20px;">Atrix — Master Summary Report</h1>
-        <p style="margin: 4px 0 0; font-size: 12px; color: #F5A623;">
-          Employee: <b>${userName}</b> | Filter: ${timeframe.toUpperCase()}
-        </p>
-      </div>
-
-      <h3 style="color: #1B2340; border-bottom: 2px solid #1B2340; padding-bottom: 4px; margin-top: 20px;">1. Timesheet Entries</h3>
-      <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 11px;">
-        <thead>
-          <tr style="background: #E3DFD3; text-align: left;">
-            <th style="padding: 6px; border: 1px solid #ccc;">Employee</th>
-            <th style="padding: 6px; border: 1px solid #ccc;">Date</th>
-            <th style="padding: 6px; border: 1px solid #ccc;">Timing</th>
-            <th style="padding: 6px; border: 1px solid #ccc;">Work Description</th>
+    <h4 style="margin: 10px 0 6px; border-bottom: 2px solid #1B2340; padding-bottom: 2px;">1. Timesheet Entries</h4>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 10px;">
+      <thead>
+        <tr style="background: #E3DFD3; text-align: left;">
+          <th style="padding: 5px; border: 1px solid #ccc;">User</th>
+          <th style="padding: 5px; border: 1px solid #ccc;">Date</th>
+          <th style="padding: 5px; border: 1px solid #ccc;">Timing</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${timesheetData.length > 0 ? timesheetData.map(t => `
+          <tr>
+            <td style="padding: 5px; border: 1px solid #ccc;"><b>${t.name}</b></td>
+            <td style="padding: 5px; border: 1px solid #ccc;">${t.date}</td>
+            <td style="padding: 5px; border: 1px solid #ccc;">${t.fromTo}</td>
           </tr>
-        </thead>
-        <tbody>
-          ${timesheetData.length > 0 ? timesheetData.map(t => `
-            <tr>
-              <td style="padding: 6px; border: 1px solid #ccc;"><b>${t.name}</b></td>
-              <td style="padding: 6px; border: 1px solid #ccc;">${t.date}</td>
-              <td style="padding: 6px; border: 1px solid #ccc;">${t.fromTo}</td>
-              <td style="padding: 6px; border: 1px solid #ccc;">${t.work}</td>
-            </tr>
-          `).join('') : `<tr><td colspan="4" style="padding: 8px; text-align:center; color:#777;">No timesheet records found for this user</td></tr>`}
-        </tbody>
-      </table>
+        `).join('') : `<tr><td colspan="3" style="padding: 6px; text-align:center;">No timesheet data available</td></tr>`}
+      </tbody>
+    </table>
 
-      <h3 style="color: #1B2340; border-bottom: 2px solid #1B2340; padding-bottom: 4px; margin-top: 20px;">2. Expense Logs</h3>
-      <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 11px;">
-        <thead>
-          <tr style="background: #E3DFD3; text-align: left;">
-            <th style="padding: 6px; border: 1px solid #ccc;">Employee</th>
-            <th style="padding: 6px; border: 1px solid #ccc;">Date</th>
-            <th style="padding: 6px; border: 1px solid #ccc;">Item Details</th>
-            <th style="padding: 6px; border: 1px solid #ccc;">Amount</th>
+    <h4 style="margin: 10px 0 6px; border-bottom: 2px solid #1B2340; padding-bottom: 2px;">2. Expense Logs</h4>
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 10px;">
+      <thead>
+        <tr style="background: #E3DFD3; text-align: left;">
+          <th style="padding: 5px; border: 1px solid #ccc;">User</th>
+          <th style="padding: 5px; border: 1px solid #ccc;">Date / Item</th>
+          <th style="padding: 5px; border: 1px solid #ccc;">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${expenseData.length > 0 ? expenseData.map(e => `
+          <tr>
+            <td style="padding: 5px; border: 1px solid #ccc;"><b>${e.name}</b></td>
+            <td style="padding: 5px; border: 1px solid #ccc;">${e.date} (${e.item})</td>
+            <td style="padding: 5px; border: 1px solid #ccc;"><b>${e.amount}</b></td>
           </tr>
-        </thead>
-        <tbody>
-          ${expenseData.length > 0 ? expenseData.map(e => `
-            <tr>
-              <td style="padding: 6px; border: 1px solid #ccc;"><b>${e.name}</b></td>
-              <td style="padding: 6px; border: 1px solid #ccc;">${e.date}</td>
-              <td style="padding: 6px; border: 1px solid #ccc;">${e.item}</td>
-              <td style="padding: 6px; border: 1px solid #ccc;"><b>${e.amount}</b></td>
-            </tr>
-          `).join('') : `<tr><td colspan="4" style="padding: 8px; text-align:center; color:#777;">No expense records found for this user</td></tr>`}
-        </tbody>
-      </table>
+        `).join('') : `<tr><td colspan="3" style="padding: 6px; text-align:center;">No expense data available</td></tr>`}
+      </tbody>
+    </table>
 
-      <div style="margin-top: 30px; border-top: 1px solid #ccc; padding-top: 8px; font-size: 10px; text-align: center; color: #777;">
-        Generated automatically via Atrix Management App
-      </div>
+    <div style="margin-top: 20px; font-size: 9px; text-align: center; color: #888;">
+      Report generated automatically via Atrix App
     </div>
   `;
 
+  // 4. Clean Export Config (Page Cut Fix)
   const opt = {
-    margin:       8,
-    filename:     `Atrix_Report_${userName.replace(/\s+/g, '_')}_${timeframe}.pdf`,
+    margin:       5,
+    filename:     `Atrix_Report_${timeframe}.pdf`,
     image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2 },
-    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    html2canvas:  { scale: 2, useCORS: true, logging: false },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }
   };
 
-  html2pdf().set(opt).from(pdfTemplate).save().then(() => {
+  html2pdf().set(opt).from(container).save().then(() => {
     closeExportModal();
   });
 }
-</script>
-<script>
+ <script>
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("service-worker.js").catch(()=>{});
