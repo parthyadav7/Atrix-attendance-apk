@@ -1513,32 +1513,47 @@ function closeExportModal() {
 }
 
 // PDF Export Trigger Function
-// Dynamic PDF Export Function with Real App Data
+// Supabase Database Se Real Data Fetch Karke PDF Banane Ka Function
 async function triggerPDFExport() {
   const timeframe = document.getElementById('exportTimeframe').value;
-  
-  // 1. Current Logged-in User ka Name
-  const userRoleEl = document.getElementById('user-role');
-  const userName = userRoleEl ? userRoleEl.textContent : "Employee";
 
-  // 2. Real Timesheet Logs (DOM se read kar rahe hain)
-  const timesheetRows = Array.from(document.querySelectorAll('#ts-own-list .log-row'));
-  const timesheetData = timesheetRows.map(row => {
-    const date = row.querySelector('.log-date')?.textContent || 'N/A';
-    const time = row.querySelector('.log-times')?.textContent || 'N/A';
-    return { name: userName, date: date, fromTo: time, work: "Logged Entry" };
-  });
+  // 1. Current Session & User Fetch
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session || !session.user) {
+    alert("Please login first!");
+    return;
+  }
 
-  // 3. Real Expense Logs (DOM se read kar rahe hain)
-  const expenseRows = Array.from(document.querySelectorAll('#expense-own-list .log-row'));
-  const expenseData = expenseRows.map(row => {
-    const date = row.querySelector('.log-date')?.textContent || 'N/A';
-    const item = row.querySelector('.log-item')?.textContent || 'Expense';
-    const amount = row.querySelector('.log-amount')?.textContent || '₹0';
-    return { name: userName, date: date, item: item, amount: amount, extra: "-" };
-  });
+  const userId = session.user.id;
+  const userName = session.user.user_metadata?.full_name || session.user.email || "Employee";
 
-  // Dynamic Template
+  // 2. Database se Timesheet Data Fetch (Supabase)
+  const { data: timesheetLogs } = await sb
+    .from('timesheets')
+    .select('*')
+    .eq('user_id', userId);
+
+  // 3. Database se Expense Data Fetch (Supabase)
+  const { data: expenseLogs } = await sb
+    .from('expenses')
+    .select('*')
+    .eq('user_id', userId);
+
+  const timesheetData = (timesheetLogs || []).map(t => ({
+    name: userName,
+    date: t.date || 'N/A',
+    fromTo: `${t.start_time || ''} - ${t.end_time || ''}`,
+    work: t.work_description || 'Logged Task'
+  }));
+
+  const expenseData = (expenseLogs || []).map(e => ({
+    name: userName,
+    date: e.date || 'N/A',
+    item: e.title || e.item || 'Expense',
+    amount: e.amount ? `₹${e.amount}` : '₹0'
+  }));
+
+  // PDF Template
   const pdfTemplate = `
     <div style="font-family: Arial, sans-serif; padding: 20px; color: #1B2340;">
       <div style="background: #1B2340; color: #fff; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
@@ -1555,6 +1570,7 @@ async function triggerPDFExport() {
             <th style="padding: 6px; border: 1px solid #ccc;">Employee</th>
             <th style="padding: 6px; border: 1px solid #ccc;">Date</th>
             <th style="padding: 6px; border: 1px solid #ccc;">Timing</th>
+            <th style="padding: 6px; border: 1px solid #ccc;">Work Description</th>
           </tr>
         </thead>
         <tbody>
@@ -1563,8 +1579,9 @@ async function triggerPDFExport() {
               <td style="padding: 6px; border: 1px solid #ccc;"><b>${t.name}</b></td>
               <td style="padding: 6px; border: 1px solid #ccc;">${t.date}</td>
               <td style="padding: 6px; border: 1px solid #ccc;">${t.fromTo}</td>
+              <td style="padding: 6px; border: 1px solid #ccc;">${t.work}</td>
             </tr>
-          `).join('') : `<tr><td colspan="3" style="padding: 8px; text-align:center;">No timesheet entries found</td></tr>`}
+          `).join('') : `<tr><td colspan="4" style="padding: 8px; text-align:center; color:#777;">No timesheet records found for this user</td></tr>`}
         </tbody>
       </table>
 
@@ -1573,7 +1590,8 @@ async function triggerPDFExport() {
         <thead>
           <tr style="background: #E3DFD3; text-align: left;">
             <th style="padding: 6px; border: 1px solid #ccc;">Employee</th>
-            <th style="padding: 6px; border: 1px solid #ccc;">Date / Details</th>
+            <th style="padding: 6px; border: 1px solid #ccc;">Date</th>
+            <th style="padding: 6px; border: 1px solid #ccc;">Item Details</th>
             <th style="padding: 6px; border: 1px solid #ccc;">Amount</th>
           </tr>
         </thead>
@@ -1581,10 +1599,11 @@ async function triggerPDFExport() {
           ${expenseData.length > 0 ? expenseData.map(e => `
             <tr>
               <td style="padding: 6px; border: 1px solid #ccc;"><b>${e.name}</b></td>
-              <td style="padding: 6px; border: 1px solid #ccc;">${e.date} (${e.item})</td>
+              <td style="padding: 6px; border: 1px solid #ccc;">${e.date}</td>
+              <td style="padding: 6px; border: 1px solid #ccc;">${e.item}</td>
               <td style="padding: 6px; border: 1px solid #ccc;"><b>${e.amount}</b></td>
             </tr>
-          `).join('') : `<tr><td colspan="3" style="padding: 8px; text-align:center;">No expense entries found</td></tr>`}
+          `).join('') : `<tr><td colspan="4" style="padding: 8px; text-align:center; color:#777;">No expense records found for this user</td></tr>`}
         </tbody>
       </table>
 
@@ -1596,7 +1615,7 @@ async function triggerPDFExport() {
 
   const opt = {
     margin:       8,
-    filename:     `Atrix_Report_${userName}_${timeframe}.pdf`,
+    filename:     `Atrix_Report_${userName.replace(/\s+/g, '_')}_${timeframe}.pdf`,
     image:        { type: 'jpeg', quality: 0.98 },
     html2canvas:  { scale: 2 },
     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
