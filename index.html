@@ -196,8 +196,15 @@
     </div>
   </header>
 
+  <!-- AUTH LOADING (shown until we know if a session exists) -->
+  <section id="auth-loading-view" style="max-width:380px;margin:60px auto 0;text-align:center;">
+    <div class="card" style="padding:32px 26px;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--muted);">Loading…</div>
+    </div>
+  </section>
+
   <!-- LOGIN -->
-  <section id="login-view">
+  <section id="login-view" style="display:none;">
     <div class="card">
       <h2 class="section-title">Sign in</h2>
       <form id="login-form">
@@ -1440,9 +1447,20 @@ function renderTsListHtml(recs, name){
 
 // ---------- INIT ----------
 (async function init(){
-  const { data: { session } } = await sb.auth.getSession();
-  if(session && session.user){
-    await onLoggedIn(session.user);
+  const loadingEl = document.getElementById('auth-loading-view');
+  const loginEl = document.getElementById('login-view');
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if(session && session.user){
+      if(loadingEl) loadingEl.style.display = 'none';
+      await onLoggedIn(session.user);
+    } else {
+      if(loadingEl) loadingEl.style.display = 'none';
+      if(loginEl) loginEl.style.display = 'block';
+    }
+  } catch (e) {
+    if(loadingEl) loadingEl.style.display = 'none';
+    if(loginEl) loginEl.style.display = 'block';
   }
 })();
 </script>
