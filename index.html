@@ -420,6 +420,21 @@
 <script>
 const SUPABASE_URL = 'https://odhjgnukepwucqzyujsd.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_1rK8421pIYQzsDe6y3tTFg_jjx-Nj6b';
+
+if (typeof supabase === 'undefined') {
+  // A required library failed to load (usually a slow/blocked internet connection).
+  // Without this guard, the login form would silently do a native page submit —
+  // causing a confusing blink with no error message.
+  const lf = document.getElementById('login-form');
+  if (lf) lf.addEventListener('submit', (e)=> e.preventDefault());
+  const el = document.getElementById('login-error');
+  if (el) {
+    el.textContent = 'Could not load a required file. Please check your internet connection and reload the page.';
+    el.style.display = 'block';
+  }
+  throw new Error('Supabase library failed to load — aborting app init.');
+}
+
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentUser = null;
@@ -1392,21 +1407,4 @@ async function renderTimesheetPanel(){
     listEl.querySelectorAll('.ts-delete-link').forEach(a=>{
       a.addEventListener('click', async (e)=>{
         e.preventDefault();
-        if(!confirm('Delete this work entry?')) return;
-        const { error } = await sb.from('timesheets').delete().eq('id', a.dataset.id);
-        if(error){ showToast('Could not delete: ' + error.message); return; }
-        renderTimesheetPanel();
-      });
-    });
-  }
-}
-
-function renderTsListHtml(recs, name){
-  const sorted = recs.slice().sort((a,b)=> b.date.localeCompare(a.date) || a.start_time.localeCompare(b.start_time));
-  let html = `<div class="emp-log-inner"><div class="log-list">`;
-  if(sorted.length === 0){
-    html += `<div class="log-empty">No work entries logged for ${escapeHtml(name)} in this period.</div>`;
-  } else {
-    sorted.forEach(r=>{
-      html += `
-        <div class="log
+        if(!confirm('Delete this wor
