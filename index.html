@@ -11,6 +11,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
   :root{
     --ink:#1B2340; --paper:#FAF8F3; --paper-line:#E3DFD3;
@@ -73,6 +74,18 @@
   button.btn:disabled{opacity:0.5;cursor:not-allowed;}
   button.btn.ghost{background:none;color:var(--ink);}
   button.btn.small{padding:6px 12px;font-size:0.78rem;}
+ /* PDF Modal Overlay */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(27, 35, 64, 0.6);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+}
+.modal-card {
+  width: 90%; max-width: 420px;
+  background: #fff; border-radius: 12px;
+  padding: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+} 
   button.btn.wide{width:100%;}
 
   /* ---------- LOGIN ---------- */
@@ -285,6 +298,7 @@
         </form>
       </div>
 
+      <button class="btn small" type="button" onclick="openExportModal()" style="margin-bottom: 12px;">📄 Export PDF</button>
       <!-- Shared: period + range controls -->
       <div class="card">
         <h2 class="section-title" id="expense-panel-title">My Expenses</h2>
@@ -1463,6 +1477,123 @@ function renderTsListHtml(recs, name){
     if(loginEl) loginEl.style.display = 'block';
   }
 })();
+  // PDF Modal Open/Close Logic
+function openExportModal() {
+  document.getElementById('exportModal').style.display = 'flex';
+}
+
+function closeExportModal() {
+  document.getElementById('exportModal').style.display = 'none';
+}
+
+// PDF Export Trigger Function
+function triggerPDFExport() {
+  const timeframe = document.getElementById('exportTimeframe').value;
+  
+  // Real App Data placeholders
+  const reportData = [
+    { name: "Rahul Sharma", date: "22/07/2026", time: "09:30 AM", coords: "19.0760° N, 72.8777° E" }
+  ];
+
+  const timesheetData = [
+    { name: "Rahul Sharma", date: "22/07/2026", fromTo: "09:30 AM - 06:30 PM", work: "App Development" }
+  ];
+
+  const expenseData = [
+    { name: "Rahul Sharma", date: "22/07/2026", item: "Travel Expense", amount: "₹450", extra: "Taxi Bill" }
+  ];
+
+  const pdfTemplate = `
+    <div style="font-family: Arial, sans-serif; padding: 20px; color: #1B2340;">
+      <div style="background: #1B2340; color: #fff; padding: 16px; border-radius: 8px; margin-bottom: 20px;">
+        <h1 style="margin:0; font-size: 20px;">Atrix — Master Summary Report</h1>
+        <p style="margin: 4px 0 0; font-size: 12px; color: #F5A623;">Selected Filter: ${timeframe.toUpperCase()}</p>
+      </div>
+
+      <h3 style="color: #1B2340; border-bottom: 2px solid #1B2340; padding-bottom: 4px; margin-top: 20px;">1. Reports (Location & Attendance)</h3>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 11px;">
+        <thead>
+          <tr style="background: #E3DFD3; text-align: left;">
+            <th style="padding: 6px; border: 1px solid #ccc;">Employee Name</th>
+            <th style="padding: 6px; border: 1px solid #ccc;">Date & Time</th>
+            <th style="padding: 6px; border: 1px solid #ccc;">Location Coordinates</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${reportData.map(r => `
+            <tr>
+              <td style="padding: 6px; border: 1px solid #ccc;"><b>${r.name}</b></td>
+              <td style="padding: 6px; border: 1px solid #ccc;">${r.date}, ${r.time}</td>
+              <td style="padding: 6px; border: 1px solid #ccc;">${r.coords}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+
+      <h3 style="color: #1B2340; border-bottom: 2px solid #1B2340; padding-bottom: 4px; margin-top: 20px;">2. Timesheet (Work Hours & Work Done)</h3>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 11px;">
+        <thead>
+          <tr style="background: #E3DFD3; text-align: left;">
+            <th style="padding: 6px; border: 1px solid #ccc;">Employee Name</th>
+            <th style="padding: 6px; border: 1px solid #ccc;">Date</th>
+            <th style="padding: 6px; border: 1px solid #ccc;">From - To Time</th>
+            <th style="padding: 6px; border: 1px solid #ccc;">Work Done</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${timesheetData.map(t => `
+            <tr>
+              <td style="padding: 6px; border: 1px solid #ccc;"><b>${t.name}</b></td>
+              <td style="padding: 6px; border: 1px solid #ccc;">${t.date}</td>
+              <td style="padding: 6px; border: 1px solid #ccc;">${t.fromTo}</td>
+              <td style="padding: 6px; border: 1px solid #ccc;">${t.work}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+
+      <h3 style="color: #1B2340; border-bottom: 2px solid #1B2340; padding-bottom: 4px; margin-top: 20px;">3. Expense Logs</h3>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px; font-size: 11px;">
+        <thead>
+          <tr style="background: #E3DFD3; text-align: left;">
+            <th style="padding: 6px; border: 1px solid #ccc;">Employee Name</th>
+            <th style="padding: 6px; border: 1px solid #ccc;">Date</th>
+            <th style="padding: 6px; border: 1px solid #ccc;">Item Name</th>
+            <th style="padding: 6px; border: 1px solid #ccc;">Amount</th>
+            <th style="padding: 6px; border: 1px solid #ccc;">Extra Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${expenseData.map(e => `
+            <tr>
+              <td style="padding: 6px; border: 1px solid #ccc;"><b>${e.name}</b></td>
+              <td style="padding: 6px; border: 1px solid #ccc;">${e.date}</td>
+              <td style="padding: 6px; border: 1px solid #ccc;">${e.item}</td>
+              <td style="padding: 6px; border: 1px solid #ccc;"><b>${e.amount}</b></td>
+              <td style="padding: 6px; border: 1px solid #ccc;">${e.extra}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+
+      <div style="margin-top: 30px; border-top: 1px solid #ccc; padding-top: 8px; font-size: 10px; text-align: center; color: #777;">
+        Generated automatically via Atrix Management App
+      </div>
+    </div>
+  `;
+
+  const opt = {
+    margin:       8,
+    filename:     `Atrix_Report_${timeframe}.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2 },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  };
+
+  html2pdf().set(opt).from(pdfTemplate).save().then(() => {
+    closeExportModal();
+  });
+}
 </script>
 <script>
 if ("serviceWorker" in navigator) {
