@@ -203,11 +203,11 @@
     <div class="user-badge" id="user-badge" style="display:none;">
       <span id="user-name-label" style="font-weight:600;font-size:0.9rem;"></span>
       <span class="role-pill" id="user-role-pill"></span>
+      <button class="btn ghost small" id="logout-btn" type="button">Log out</button>
       <div class="date-field-wrap" id="admin-menu-wrap" style="display:none;">
         <button class="icon-btn" id="admin-menu-btn" type="button" title="More">⋮</button>
-        <div class="cal-popup hidden" id="admin-menu-popup" style="left:auto;right:0;width:220px;padding:6px;"></div>
+        <div class="cal-popup hidden" id="admin-menu-popup" style="position:fixed;top:70px;right:16px;left:auto;width:230px;padding:8px;"></div>
       </div>
-      <button class="btn ghost small" id="logout-btn" type="button">Log out</button>
     </div>
   </header>
 
@@ -497,7 +497,8 @@
     <h2 class="section-title" style="color:var(--absent);">Are you sure?</h2>
     <p style="font-size:0.92rem;line-height:1.5;">You are about to <strong>permanently delete</strong> all attendance, expense, and timesheet records for <strong><span id="del-warning-range"></span></strong> from the database. This action cannot be undone — once deleted, this data cannot be recovered.</p>
     <p style="font-family:'Fraunces',serif;font-weight:700;font-size:1.05rem;color:var(--absent);line-height:1.4;margin-top:14px;">Please export this data as a PDF first, before deleting it!</p>
-    <div style="display:flex;gap:10px;margin-top:18px;">
+    <button class="btn wide" id="del-warning-pdf-btn" type="button" style="margin-top:14px;">Download PDF</button>
+    <div style="display:flex;gap:10px;margin-top:14px;">
       <button class="btn ghost" id="del-warning-cancel-btn" type="button" style="flex:1;">Cancel</button>
       <button class="btn" id="del-warning-confirm-btn" type="button" style="flex:1;background:var(--absent);border-color:var(--absent);">Yes, delete data</button>
     </div>
@@ -1567,147 +1568,214 @@ function coordsText(lat, lng){
   return `${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)}`;
 }
 
+const geocodeCache = {};
+function geocodeKey(lat, lng){ return `${Number(lat).toFixed(4)},${Number(lng).toFixed(4)}`; }
+
+async function reverseGeocodeOne(lat, lng){
+  const key = geocodeKey(lat, lng);
+  if(geocodeCache[key]) return geocodeCache[key];
+  try{
+    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=16&addressdetails=1`, {
+      headers: { 'Accept-Language': 'en' }
+    });
+    if(!res.ok) throw new Error('lookup failed');
+    const data = await res.json();
+    const a = data.address || {};
+    const parts = [
+      a.road || a.pedestrian,
+      a.suburb || a.neighbourhood || a.village,
+      a.city || a.town || a.county
+    ].filter(Boolean);
+    const name = parts.length ? parts.join(', ') : (data.display_name ? data.display_name.split(',').slice(0,3).join(',') : null);
+    geocodeCache[key] = name || null;
+    return geocodeCache[key];
+  }catch(e){
+    geocodeCache[key] = null;
+    return null;
+  }
+}
+
+// Resolves every unique coordinate pair in the given attendance rows into a place name,
+// one request at a time with a short delay to stay within the free geocoding service's limits.
+async function resolveLocationNames(attendanceRows, statusEl){
+  const uniqueCoords = [];
+  const seen = new Set();
+  attendanceRows.forEach(r=>{
+    [[r.check_in_lat, r.check_in_lng], [r.check_out_lat, r.check_out_lng]].forEach(([lat,lng])=>{
+      if(lat == null || lng == null) return;
+      const key = geocodeKey(lat, lng);
+      if(!seen.has(key)){ seen.add(key); uniqueCoords.push([lat,lng]); }
+    });
+  });
+  for(let i=0; i<uniqueCoords.length; i++){
+    if(statusEl) statusEl.textContent = `Resolving locations… (${i+1}/${uniqueCoords.length})`;
+    await reverseGeocodeOne(uniqueCoords[i][0], uniqueCoords[i][1]);
+    if(i < uniqueCoords.length - 1) await new Promise(r=>setTimeout(r, 1100));
+  }
+}
+
+function locationCellText(lat, lng){
+  if(lat == null || lng == null) return '—';
+  const name = geocodeCache[geocodeKey(lat, lng)];
+  const coords = coordsText(lat, lng);
+  return name ? `${name}\n(${coords})` : coords;
+}
+
+async function generatePdfForRange(startIso, endIso, label, statusEl){
+  if(statusEl) statusEl.textContent = 'Gathering data…';
+  const activeProfiles = allProfiles.filter(p=>p.active).slice().sort((a,b)=> a.name.localeCompare(b.name));
+
+  const [attRes, expRes, tsRes] = await Promise.all([
+    sb.from('attendance').select('*').gte('date', startIso).lte('date', endIso),
+    sb.from('expenses').select('*').gte('date', startIso).lte('date', endIso),
+    sb.from('timesheets').select('*').gte('date', startIso).lte('date', endIso)
+  ]);
+  if(attRes.error) throw attRes.error;
+  if(expRes.error) throw expRes.error;
+  if(tsRes.error) throw tsRes.error;
+
+  await resolveLocationNames(attRes.data, statusEl);
+
+  if(statusEl) statusEl.textContent = 'Building PDF…';
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const marginX = 40;
+  let y = 50;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.text('Atrix Attendance Register', marginX, y);
+  y += 20;
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10);
+  doc.text(`Period: ${label}  (${isoToDMY(startIso)} to ${isoToDMY(endIso)})`, marginX, y);
+  y += 14;
+  doc.text(`Generated: ${isoToDMY(todayISO())} ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`, marginX, y);
+  y += 24;
+
+  function ensureSpace(neededPt){
+    if(y + neededPt > pageHeight - 40){
+      doc.addPage();
+      y = 50;
+    }
+  }
+  function sectionHeading(text){
+    ensureSpace(24);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text(text, marginX, y);
+    y += 6;
+  }
+
+  activeProfiles.forEach((p, idx)=>{
+    ensureSpace(40);
+    doc.setFillColor(245, 166, 35);
+    doc.rect(marginX, y, doc.internal.pageSize.getWidth() - marginX*2, 20, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(12);
+    doc.setTextColor(27,35,64);
+    doc.text(p.name, marginX + 8, y + 14);
+    doc.setTextColor(0,0,0);
+    y += 30;
+
+    // Attendance table
+    const attRows = attRes.data.filter(r=>r.employee_id === p.id).sort((a,b)=> a.date.localeCompare(b.date));
+    sectionHeading('Attendance');
+    if(attRows.length === 0){
+      doc.setFont('helvetica','normal'); doc.setFontSize(9);
+      doc.text('No attendance records.', marginX, y+10);
+      y += 20;
+    } else {
+      const body = attRows.map(r => [
+        isoToDMY(r.date),
+        r.status === 'P' ? 'Present' : r.status === 'A' ? 'Absent' : 'Half day',
+        r.check_in_time ? fmtTime(r.check_in_time) : '—',
+        locationCellText(r.check_in_lat, r.check_in_lng),
+        r.check_out_time ? fmtTime(r.check_out_time) : '—',
+        locationCellText(r.check_out_lat, r.check_out_lng)
+      ]);
+      doc.autoTable({
+        startY: y,
+        margin: { left: marginX, right: marginX },
+        head: [['Date','Status','In Time','In Location','Out Time','Out Location']],
+        body,
+        styles: { fontSize: 7.5, cellPadding: 4, valign: 'middle' },
+        headStyles: { fillColor: [27,35,64] },
+        columnStyles: {
+          0: { cellWidth: 52 },
+          1: { cellWidth: 40 },
+          2: { cellWidth: 45 },
+          3: { cellWidth: 'auto' },
+          4: { cellWidth: 45 },
+          5: { cellWidth: 'auto' }
+        },
+        theme: 'grid'
+      });
+      y = doc.lastAutoTable.finalY + 16;
+    }
+
+    // Expenses table
+    const expRows = expRes.data.filter(r=>r.employee_id === p.id).sort((a,b)=> a.date.localeCompare(b.date));
+    sectionHeading('Expenses');
+    if(expRows.length === 0){
+      doc.setFont('helvetica','normal'); doc.setFontSize(9);
+      doc.text('No expenses logged.', marginX, y+10);
+      y += 20;
+    } else {
+      const body = expRows.map(r => [
+        isoToDMY(r.date), r.item, `Rs. ${Number(r.amount).toFixed(2)}`, r.note || '—'
+      ]);
+      doc.autoTable({
+        startY: y,
+        margin: { left: marginX, right: marginX },
+        head: [['Date','Item','Amount','Description']],
+        body,
+        styles: { fontSize: 8, cellPadding: 4 },
+        headStyles: { fillColor: [27,35,64] },
+        theme: 'grid'
+      });
+      y = doc.lastAutoTable.finalY + 16;
+    }
+
+    // Timesheet table
+    const tsRows = tsRes.data.filter(r=>r.employee_id === p.id).sort((a,b)=> a.date.localeCompare(b.date) || a.start_time.localeCompare(b.start_time));
+    sectionHeading('Timesheet');
+    if(tsRows.length === 0){
+      doc.setFont('helvetica','normal'); doc.setFontSize(9);
+      doc.text('No work entries logged.', marginX, y+10);
+      y += 20;
+    } else {
+      const body = tsRows.map(r => [
+        isoToDMY(r.date), fmtTime12(r.start_time), fmtTime12(r.end_time), r.work_description
+      ]);
+      doc.autoTable({
+        startY: y,
+        margin: { left: marginX, right: marginX },
+        head: [['Date','From','To','Work Description']],
+        body,
+        styles: { fontSize: 8, cellPadding: 4 },
+        headStyles: { fillColor: [27,35,64] },
+        theme: 'grid'
+      });
+      y = doc.lastAutoTable.finalY + 26;
+    }
+
+    if(idx < activeProfiles.length - 1) ensureSpace(30);
+  });
+
+  const fileLabel = label.replace(/\s+/g,'_').replace(/[–,]/g,'');
+  doc.save(`Atrix_Report_${fileLabel}.pdf`);
+  if(statusEl) statusEl.textContent = 'PDF downloaded.';
+}
+
 document.getElementById('pdf-download-btn').addEventListener('click', async ()=>{
   const statusEl = document.getElementById('pdf-status');
   const btn = document.getElementById('pdf-download-btn');
   btn.disabled = true;
-  statusEl.textContent = 'Gathering data…';
   try{
     const {startIso, endIso, label} = computeRange(pdfPeriod, pdfRefDate);
-    const activeProfiles = allProfiles.filter(p=>p.active).slice().sort((a,b)=> a.name.localeCompare(b.name));
-
-    const [attRes, expRes, tsRes] = await Promise.all([
-      sb.from('attendance').select('*').gte('date', startIso).lte('date', endIso),
-      sb.from('expenses').select('*').gte('date', startIso).lte('date', endIso),
-      sb.from('timesheets').select('*').gte('date', startIso).lte('date', endIso)
-    ]);
-    if(attRes.error) throw attRes.error;
-    if(expRes.error) throw expRes.error;
-    if(tsRes.error) throw tsRes.error;
-
-    statusEl.textContent = 'Building PDF…';
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-    const pageHeight = doc.internal.pageSize.getHeight();
-    const marginX = 40;
-    let y = 50;
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(16);
-    doc.text('Atrix Attendance Register', marginX, y);
-    y += 20;
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.text(`Period: ${label}  (${isoToDMY(startIso)} to ${isoToDMY(endIso)})`, marginX, y);
-    y += 14;
-    doc.text(`Generated: ${isoToDMY(todayISO())} ${new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}`, marginX, y);
-    y += 24;
-
-    function ensureSpace(neededPt){
-      if(y + neededPt > pageHeight - 40){
-        doc.addPage();
-        y = 50;
-      }
-    }
-    function sectionHeading(text){
-      ensureSpace(24);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(11);
-      doc.text(text, marginX, y);
-      y += 6;
-    }
-
-    activeProfiles.forEach((p, idx)=>{
-      ensureSpace(40);
-      doc.setFillColor(245, 166, 35);
-      doc.rect(marginX, y, doc.internal.pageSize.getWidth() - marginX*2, 20, 'F');
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(12);
-      doc.setTextColor(27,35,64);
-      doc.text(p.name, marginX + 8, y + 14);
-      doc.setTextColor(0,0,0);
-      y += 30;
-
-      // Attendance table
-      const attRows = attRes.data.filter(r=>r.employee_id === p.id).sort((a,b)=> a.date.localeCompare(b.date));
-      sectionHeading('Attendance');
-      if(attRows.length === 0){
-        doc.setFont('helvetica','normal'); doc.setFontSize(9);
-        doc.text('No attendance records.', marginX, y+10);
-        y += 20;
-      } else {
-        const body = attRows.map(r => [
-          isoToDMY(r.date),
-          r.status === 'P' ? 'Present' : r.status === 'A' ? 'Absent' : 'Half day',
-          r.check_in_time ? fmtTime(r.check_in_time) : '—',
-          coordsText(r.check_in_lat, r.check_in_lng),
-          r.check_out_time ? fmtTime(r.check_out_time) : '—',
-          coordsText(r.check_out_lat, r.check_out_lng)
-        ]);
-        doc.autoTable({
-          startY: y,
-          margin: { left: marginX, right: marginX },
-          head: [['Date','Status','In Time','In Location','Out Time','Out Location']],
-          body,
-          styles: { fontSize: 8, cellPadding: 4 },
-          headStyles: { fillColor: [27,35,64] },
-          theme: 'grid'
-        });
-        y = doc.lastAutoTable.finalY + 16;
-      }
-
-      // Expenses table
-      const expRows = expRes.data.filter(r=>r.employee_id === p.id).sort((a,b)=> a.date.localeCompare(b.date));
-      sectionHeading('Expenses');
-      if(expRows.length === 0){
-        doc.setFont('helvetica','normal'); doc.setFontSize(9);
-        doc.text('No expenses logged.', marginX, y+10);
-        y += 20;
-      } else {
-        const body = expRows.map(r => [
-          isoToDMY(r.date), r.item, `Rs. ${Number(r.amount).toFixed(2)}`, r.note || '—'
-        ]);
-        doc.autoTable({
-          startY: y,
-          margin: { left: marginX, right: marginX },
-          head: [['Date','Item','Amount','Description']],
-          body,
-          styles: { fontSize: 8, cellPadding: 4 },
-          headStyles: { fillColor: [27,35,64] },
-          theme: 'grid'
-        });
-        y = doc.lastAutoTable.finalY + 16;
-      }
-
-      // Timesheet table
-      const tsRows = tsRes.data.filter(r=>r.employee_id === p.id).sort((a,b)=> a.date.localeCompare(b.date) || a.start_time.localeCompare(b.start_time));
-      sectionHeading('Timesheet');
-      if(tsRows.length === 0){
-        doc.setFont('helvetica','normal'); doc.setFontSize(9);
-        doc.text('No work entries logged.', marginX, y+10);
-        y += 20;
-      } else {
-        const body = tsRows.map(r => [
-          isoToDMY(r.date), fmtTime12(r.start_time), fmtTime12(r.end_time), r.work_description
-        ]);
-        doc.autoTable({
-          startY: y,
-          margin: { left: marginX, right: marginX },
-          head: [['Date','From','To','Work Description']],
-          body,
-          styles: { fontSize: 8, cellPadding: 4 },
-          headStyles: { fillColor: [27,35,64] },
-          theme: 'grid'
-        });
-        y = doc.lastAutoTable.finalY + 26;
-      }
-
-      if(idx < activeProfiles.length - 1) ensureSpace(30);
-    });
-
-    const fileLabel = label.replace(/\s+/g,'_').replace(/[–,]/g,'');
-    doc.save(`Atrix_Report_${fileLabel}.pdf`);
-    statusEl.textContent = 'PDF downloaded.';
+    await generatePdfForRange(startIso, endIso, label, statusEl);
   }catch(err){
     statusEl.textContent = 'Could not generate PDF: ' + (err.message || err);
   } finally {
@@ -1723,7 +1791,7 @@ let pendingDeleteRange = null;
 
 function openAdminMenu(){
   const popup = document.getElementById('admin-menu-popup');
-  popup.innerHTML = `<button type="button" id="delete-data-menu-item" style="width:100%;text-align:left;background:none;border:none;padding:10px 8px;color:var(--absent);font-weight:600;font-size:0.85rem;cursor:pointer;display:flex;align-items:center;gap:8px;">🗑 Delete data from database</button>`;
+  popup.innerHTML = `<button type="button" id="delete-data-menu-item" style="width:100%;text-align:left;background:var(--paper);border:1.5px solid var(--paper-line);border-radius:8px;padding:12px 14px;color:var(--absent);font-weight:600;font-size:0.85rem;cursor:pointer;display:flex;align-items:center;gap:8px;">🗑&nbsp; Delete data from database</button>`;
   popup.classList.remove('hidden');
   document.getElementById('delete-data-menu-item').addEventListener('click', ()=>{
     popup.classList.add('hidden');
@@ -1796,6 +1864,20 @@ document.getElementById('del-setup-confirm-btn').addEventListener('click', ()=>{
   document.getElementById('delete-warning-overlay').classList.remove('hidden');
 });
 
+document.getElementById('del-warning-pdf-btn').addEventListener('click', async ()=>{
+  if(!pendingDeleteRange) return;
+  const statusEl = document.getElementById('del-final-status');
+  const btn = document.getElementById('del-warning-pdf-btn');
+  btn.disabled = true;
+  try{
+    await generatePdfForRange(pendingDeleteRange.startIso, pendingDeleteRange.endIso, pendingDeleteRange.label, statusEl);
+  }catch(err){
+    statusEl.textContent = 'Could not generate PDF: ' + (err.message || err);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
 document.getElementById('del-warning-cancel-btn').addEventListener('click', ()=>{
   document.getElementById('delete-warning-overlay').classList.add('hidden');
   pendingDeleteRange = null;
@@ -1822,6 +1904,9 @@ document.getElementById('del-warning-confirm-btn').addEventListener('click', asy
     pendingDeleteRange = null;
     showToast('Data deleted from database');
     renderAttendancePanel();
+    renderReportsTab();
+    renderExpensesPanel();
+    renderTimesheetPanel();
   }catch(err){
     statusEl.textContent = 'Could not delete: ' + (err.message || err);
   } finally {
