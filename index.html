@@ -176,6 +176,15 @@
   .log-times a{color:var(--ink);}
   .log-empty{padding:16px;text-align:center;color:var(--muted);font-size:0.85rem;}
 
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(27,35,64,0.6);display:flex;align-items:center;justify-content:center;
+    z-index:200;padding:20px;
+  }
+  .modal-overlay.hidden{display:none;}
+  .modal-card{
+    background:#fff;border-radius:14px;padding:26px 22px;max-width:400px;width:100%;
+    box-shadow:0 20px 60px rgba(0,0,0,0.35);
+  }
   .toast{
     position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(10px);
     background:var(--ink);color:#fff;padding:10px 20px;border-radius:8px;font-size:0.85rem;
@@ -194,6 +203,10 @@
     <div class="user-badge" id="user-badge" style="display:none;">
       <span id="user-name-label" style="font-weight:600;font-size:0.9rem;"></span>
       <span class="role-pill" id="user-role-pill"></span>
+      <div class="date-field-wrap" id="admin-menu-wrap" style="display:none;">
+        <button class="icon-btn" id="admin-menu-btn" type="button" title="More">⋮</button>
+        <div class="cal-popup hidden" id="admin-menu-popup" style="left:auto;right:0;width:220px;padding:6px;"></div>
+      </div>
       <button class="btn ghost small" id="logout-btn" type="button">Log out</button>
     </div>
   </header>
@@ -447,6 +460,51 @@
 </div>
 <div class="toast" id="toast"></div>
 
+<!-- DELETE DATA — step 1: choose period + enter password -->
+<div class="modal-overlay hidden" id="delete-setup-overlay">
+  <div class="modal-card">
+    <h2 class="section-title" style="color:var(--absent);">Delete data from database</h2>
+    <div class="field-hint" style="margin-bottom:14px;">Choose the period to delete. This removes attendance, expenses, and timesheet records for every employee in that range.</div>
+    <div class="period-tabs">
+      <button class="del-period-btn active" data-period="weekly" type="button">Weekly</button>
+      <button class="del-period-btn" data-period="monthly" type="button">Monthly</button>
+      <button class="del-period-btn" data-period="yearly" type="button">Yearly</button>
+    </div>
+    <div class="range-bar">
+      <button class="range-nav-btn" id="del-range-prev-btn" type="button">‹</button>
+      <span class="range-label" id="del-range-label"></span>
+      <button class="range-nav-btn" id="del-range-next-btn" type="button">›</button>
+      <div class="date-field-wrap" style="margin-left:8px;">
+        <button class="cal-toggle-btn" id="del-cal-toggle-btn" type="button">📅</button>
+        <div class="cal-popup hidden" id="del-cal-popup"></div>
+      </div>
+    </div>
+    <div class="field" style="margin-top:16px;">
+      <label class="field-label">Password</label>
+      <input type="password" id="del-password" autocomplete="off">
+    </div>
+    <div id="del-setup-error" style="color:var(--absent);font-size:0.85rem;margin-top:8px;display:none;"></div>
+    <div style="display:flex;gap:10px;margin-top:18px;">
+      <button class="btn ghost" id="del-setup-cancel-btn" type="button" style="flex:1;">Cancel</button>
+      <button class="btn" id="del-setup-confirm-btn" type="button" style="flex:1;background:var(--absent);border-color:var(--absent);">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE DATA — step 2: final warning -->
+<div class="modal-overlay hidden" id="delete-warning-overlay">
+  <div class="modal-card">
+    <h2 class="section-title" style="color:var(--absent);">Are you sure?</h2>
+    <p style="font-size:0.92rem;line-height:1.5;">You are about to <strong>permanently delete</strong> all attendance, expense, and timesheet records for <strong><span id="del-warning-range"></span></strong> from the database. This action cannot be undone — once deleted, this data cannot be recovered.</p>
+    <p style="font-family:'Fraunces',serif;font-weight:700;font-size:1.05rem;color:var(--absent);line-height:1.4;margin-top:14px;">Please export this data as a PDF first, before deleting it!</p>
+    <div style="display:flex;gap:10px;margin-top:18px;">
+      <button class="btn ghost" id="del-warning-cancel-btn" type="button" style="flex:1;">Cancel</button>
+      <button class="btn" id="del-warning-confirm-btn" type="button" style="flex:1;background:var(--absent);border-color:var(--absent);">Yes, delete data</button>
+    </div>
+    <div class="field-hint" id="del-final-status" style="margin-top:12px;"></div>
+  </div>
+</div>
+
 <script>
 const SUPABASE_URL = 'https://odhjgnukepwucqzyujsd.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_1rK8421pIYQzsDe6y3tTFg_jjx-Nj6b';
@@ -581,6 +639,7 @@ async function onLoggedIn(user){
   document.getElementById('user-role-pill').textContent = profile.role;
   document.getElementById('team-tab-btn').style.display = profile.role === 'admin' ? 'inline-block' : 'none';
   document.getElementById('export-tab-btn').style.display = profile.role === 'admin' ? 'inline-block' : 'none';
+  document.getElementById('admin-menu-wrap').style.display = profile.role === 'admin' ? 'inline-block' : 'none';
 
   await loadAllProfiles();
   renderAttendancePanel();
@@ -1651,6 +1710,120 @@ document.getElementById('pdf-download-btn').addEventListener('click', async ()=>
     statusEl.textContent = 'PDF downloaded.';
   }catch(err){
     statusEl.textContent = 'Could not generate PDF: ' + (err.message || err);
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+// ---------- ADMIN MENU + DELETE DATA ----------
+const DELETE_PASSWORD = 'atx@8655';
+let delPeriod = 'weekly';
+let delRefDate = new Date();
+let pendingDeleteRange = null;
+
+function openAdminMenu(){
+  const popup = document.getElementById('admin-menu-popup');
+  popup.innerHTML = `<button type="button" id="delete-data-menu-item" style="width:100%;text-align:left;background:none;border:none;padding:10px 8px;color:var(--absent);font-weight:600;font-size:0.85rem;cursor:pointer;display:flex;align-items:center;gap:8px;">🗑 Delete data from database</button>`;
+  popup.classList.remove('hidden');
+  document.getElementById('delete-data-menu-item').addEventListener('click', ()=>{
+    popup.classList.add('hidden');
+    openDeleteSetup();
+  });
+}
+document.getElementById('admin-menu-btn').addEventListener('click', (e)=>{
+  e.stopPropagation();
+  const popup = document.getElementById('admin-menu-popup');
+  if(popup.classList.contains('hidden')) openAdminMenu();
+  else popup.classList.add('hidden');
+});
+document.addEventListener('click', (e)=>{
+  const popup = document.getElementById('admin-menu-popup');
+  const btn = document.getElementById('admin-menu-btn');
+  if(!popup.contains(e.target) && e.target !== btn) popup.classList.add('hidden');
+});
+
+function openDeleteSetup(){
+  document.getElementById('del-password').value = '';
+  document.getElementById('del-setup-error').style.display = 'none';
+  renderDeleteRangeLabel();
+  document.getElementById('delete-setup-overlay').classList.remove('hidden');
+}
+document.getElementById('del-setup-cancel-btn').addEventListener('click', ()=>{
+  document.getElementById('delete-setup-overlay').classList.add('hidden');
+});
+
+document.querySelectorAll('.del-period-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.del-period-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    delPeriod = btn.dataset.period;
+    renderDeleteRangeLabel();
+  });
+});
+document.getElementById('del-range-prev-btn').addEventListener('click', ()=>shiftDeleteRange(-1));
+document.getElementById('del-range-next-btn').addEventListener('click', ()=>shiftDeleteRange(1));
+makeDatePicker(
+  document.getElementById('del-cal-toggle-btn'),
+  document.getElementById('del-cal-popup'),
+  ()=> toISO(delRefDate),
+  (iso)=>{ delRefDate = new Date(iso + 'T00:00:00'); renderDeleteRangeLabel(); }
+);
+function shiftDeleteRange(dir){
+  const d = new Date(delRefDate);
+  if(delPeriod === 'weekly') d.setDate(d.getDate() + dir*7);
+  else if(delPeriod === 'monthly') d.setMonth(d.getMonth() + dir);
+  else d.setFullYear(d.getFullYear() + dir);
+  delRefDate = d; renderDeleteRangeLabel();
+}
+function renderDeleteRangeLabel(){
+  const {label} = computeRange(delPeriod, delRefDate);
+  document.getElementById('del-range-label').textContent = label;
+}
+
+document.getElementById('del-setup-confirm-btn').addEventListener('click', ()=>{
+  const entered = document.getElementById('del-password').value;
+  const errEl = document.getElementById('del-setup-error');
+  if(entered !== DELETE_PASSWORD){
+    errEl.textContent = 'Incorrect password.';
+    errEl.style.display = 'block';
+    return;
+  }
+  const {startIso, endIso, label} = computeRange(delPeriod, delRefDate);
+  pendingDeleteRange = {startIso, endIso, label};
+  document.getElementById('delete-setup-overlay').classList.add('hidden');
+  document.getElementById('del-warning-range').textContent = label;
+  document.getElementById('del-final-status').textContent = '';
+  document.getElementById('delete-warning-overlay').classList.remove('hidden');
+});
+
+document.getElementById('del-warning-cancel-btn').addEventListener('click', ()=>{
+  document.getElementById('delete-warning-overlay').classList.add('hidden');
+  pendingDeleteRange = null;
+});
+
+document.getElementById('del-warning-confirm-btn').addEventListener('click', async ()=>{
+  if(!pendingDeleteRange) return;
+  const { startIso, endIso } = pendingDeleteRange;
+  const btn = document.getElementById('del-warning-confirm-btn');
+  const statusEl = document.getElementById('del-final-status');
+  btn.disabled = true;
+  statusEl.textContent = 'Deleting…';
+  try{
+    const [a, e, t] = await Promise.all([
+      sb.from('attendance').delete().gte('date', startIso).lte('date', endIso),
+      sb.from('expenses').delete().gte('date', startIso).lte('date', endIso),
+      sb.from('timesheets').delete().gte('date', startIso).lte('date', endIso)
+    ]);
+    if(a.error) throw a.error;
+    if(e.error) throw e.error;
+    if(t.error) throw t.error;
+    statusEl.textContent = '';
+    document.getElementById('delete-warning-overlay').classList.add('hidden');
+    pendingDeleteRange = null;
+    showToast('Data deleted from database');
+    renderAttendancePanel();
+  }catch(err){
+    statusEl.textContent = 'Could not delete: ' + (err.message || err);
   } finally {
     btn.disabled = false;
   }
