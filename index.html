@@ -115,11 +115,7 @@
   button.btn.wide{width:100%;}
   button.btn.btn-present,button.btn.btn-absent,button.btn.btn-half{
     background:linear-gradient(155deg,#5a5f6e,#3d4150 60%);border-color:#3d4150;box-shadow:0 6px 16px rgba(27,35,64,0.18);
-    transition:transform .25s var(--ease-spring), box-shadow .3s var(--ease), background .25s var(--ease), border-color .25s var(--ease);
   }
-  button.btn.btn-present:hover,button.btn.btn-present:active{background:linear-gradient(155deg,#4CA89B,var(--present) 60%);border-color:var(--present);box-shadow:0 14px 30px rgba(62,142,130,0.4);}
-  button.btn.btn-absent:hover,button.btn.btn-absent:active{background:linear-gradient(155deg,#D66E62,var(--absent) 60%);border-color:var(--absent);box-shadow:0 14px 30px rgba(193,85,74,0.4);}
-  button.btn.btn-half:hover,button.btn.btn-half:active{background:linear-gradient(155deg,#E4B15C,var(--half) 60%);border-color:var(--half);box-shadow:0 14px 30px rgba(214,154,62,0.4);}
   .ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,0.5);transform:scale(0);animation:rippleFx .6s var(--ease) forwards;pointer-events:none;}
   @keyframes rippleFx{to{transform:scale(2.6);opacity:0;}}
 
@@ -753,14 +749,32 @@ function readFileAsDataURL(file){
 function getLocation(){
   return new Promise((resolve, reject)=>{
     if(!('geolocation' in navigator)){ reject(new Error('Location is not supported on this device/browser.')); return; }
-    navigator.geolocation.getCurrentPosition(
-      pos => resolve({lat: pos.coords.latitude, lng: pos.coords.longitude}),
-      err => {
+    let best = null;
+    let watchId = null;
+    const GOOD_ENOUGH_METERS = 20;   // stop early once we get a fix this precise
+    const MAX_WAIT_MS = 10000;       // otherwise keep refining for up to 10s
+    let settled = false;
+    const finish = (err)=>{
+      if(settled) return; settled = true;
+      clearTimeout(timer);
+      if(watchId !== null) navigator.geolocation.clearWatch(watchId);
+      if(best){ resolve({lat: best.coords.latitude, lng: best.coords.longitude, accuracy: best.coords.accuracy}); return; }
+      if(err){
         if(err.code === err.PERMISSION_DENIED) reject(new Error('Location permission is blocked for this site. Tap the lock/info icon next to the address bar → Permissions → allow Location, then try again.'));
         else if(err.code === err.TIMEOUT) reject(new Error('Location request timed out. Try again in an open area.'));
         else reject(new Error('Could not get your location. Please try again.'));
+      } else {
+        reject(new Error('Could not get your location. Please try again.'));
+      }
+    };
+    const timer = setTimeout(()=>finish(null), MAX_WAIT_MS);
+    watchId = navigator.geolocation.watchPosition(
+      pos => {
+        if(!best || pos.coords.accuracy < best.coords.accuracy) best = pos;
+        if(pos.coords.accuracy <= GOOD_ENOUGH_METERS) finish(null);
       },
-      { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
+      err => finish(err),
+      { enableHighAccuracy: true, timeout: MAX_WAIT_MS, maximumAge: 0 }
     );
   });
 }
@@ -828,6 +842,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+    btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
     if(btn.dataset.tab === 'attendance') renderAttendancePanel();
     if(btn.dataset.tab === 'team') renderTeamPanel();
     if(btn.dataset.tab === 'export') renderExportPanel();
@@ -843,6 +858,7 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
   let startX = 0, startY = 0, tracking = false;
   appView.addEventListener('touchstart', (e)=>{
     if(e.touches.length !== 1) return;
+    if(e.target.closest('nav.tabs')){ tracking = false; return; } // let the tab strip scroll normally, don't hijack it
     startX = e.touches[0].clientX; startY = e.touches[0].clientY; tracking = true;
   }, { passive: true });
   appView.addEventListener('touchend', (e)=>{
@@ -1035,7 +1051,6 @@ async function markCheckIn(status){
     if(error){ geoStatus.className='geo-status error'; geoStatus.textContent = 'Could not save: ' + error.message; return; }
     geoStatus.textContent = ''; geoStatus.className='geo-status';
     showToast(status === 'P' ? 'Marked Present' : 'Marked Half day');
-    celebrateSuccess();
     renderAttendancePanel();
   }catch(err){
     geoStatus.className = 'geo-status error';
@@ -1826,10 +1841,7 @@ async function resolveLocationNames(attendanceRows, statusEl){
 }
 
 function locationCellText(lat, lng){
-  if(lat == null || lng == null) return '—';
-  const name = geocodeCache[geocodeKey(lat, lng)];
-  const coords = coordsText(lat, lng);
-  return name ? `${name}\n(${coords})` : coords;
+  return coordsText(lat, lng);
 }
 
 async function generatePdfForRange(startIso, endIso, label, statusEl){
@@ -1844,8 +1856,6 @@ async function generatePdfForRange(startIso, endIso, label, statusEl){
   if(attRes.error) throw attRes.error;
   if(expRes.error) throw expRes.error;
   if(tsRes.error) throw tsRes.error;
-
-  await resolveLocationNames(attRes.data, statusEl);
 
   if(statusEl) statusEl.textContent = 'Building PDF…';
   const { jsPDF } = window.jspdf;
@@ -1920,6 +1930,20 @@ async function generatePdfForRange(startIso, endIso, label, statusEl){
           3: { cellWidth: 'auto' },
           4: { cellWidth: 45 },
           5: { cellWidth: 'auto' }
+        },
+        didParseCell: (data)=>{
+          if(data.section === 'body' && (data.column.index === 3 || data.column.index === 5) && data.cell.raw !== '—'){
+            data.cell.styles.textColor = [42, 90, 190];
+          }
+        },
+        didDrawCell: (data)=>{
+          if(data.section !== 'body') return;
+          if(data.column.index !== 3 && data.column.index !== 5) return;
+          const row = attRows[data.row.index];
+          const lat = data.column.index === 3 ? row.check_in_lat : row.check_out_lat;
+          const lng = data.column.index === 3 ? row.check_in_lng : row.check_out_lng;
+          if(lat == null || lng == null) return;
+          doc.link(data.cell.x, data.cell.y, data.cell.width, data.cell.height, { url: mapLink(lat, lng) });
         },
         theme: 'grid'
       });
