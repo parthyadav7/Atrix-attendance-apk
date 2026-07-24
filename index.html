@@ -113,12 +113,13 @@
   button.btn.ghost:hover{box-shadow:0 8px 20px rgba(27,35,64,0.16);}
   button.btn.small{padding:6px 12px;font-size:0.78rem;}
   button.btn.wide{width:100%;}
-  button.btn.btn-present{background:linear-gradient(155deg,#4CA89B,var(--present) 60%);border-color:var(--present);box-shadow:0 6px 18px rgba(62,142,130,0.3);}
-  button.btn.btn-present:hover{box-shadow:0 14px 30px rgba(62,142,130,0.4);}
-  button.btn.btn-absent{background:linear-gradient(155deg,#D66E62,var(--absent) 60%);border-color:var(--absent);box-shadow:0 6px 18px rgba(193,85,74,0.3);}
-  button.btn.btn-absent:hover{box-shadow:0 14px 30px rgba(193,85,74,0.4);}
-  button.btn.btn-half{background:linear-gradient(155deg,#E4B15C,var(--half) 60%);border-color:var(--half);box-shadow:0 6px 18px rgba(214,154,62,0.3);}
-  button.btn.btn-half:hover{box-shadow:0 14px 30px rgba(214,154,62,0.4);}
+  button.btn.btn-present,button.btn.btn-absent,button.btn.btn-half{
+    background:linear-gradient(155deg,#5a5f6e,#3d4150 60%);border-color:#3d4150;box-shadow:0 6px 16px rgba(27,35,64,0.18);
+    transition:transform .25s var(--ease-spring), box-shadow .3s var(--ease), background .25s var(--ease), border-color .25s var(--ease);
+  }
+  button.btn.btn-present:hover,button.btn.btn-present:active{background:linear-gradient(155deg,#4CA89B,var(--present) 60%);border-color:var(--present);box-shadow:0 14px 30px rgba(62,142,130,0.4);}
+  button.btn.btn-absent:hover,button.btn.btn-absent:active{background:linear-gradient(155deg,#D66E62,var(--absent) 60%);border-color:var(--absent);box-shadow:0 14px 30px rgba(193,85,74,0.4);}
+  button.btn.btn-half:hover,button.btn.btn-half:active{background:linear-gradient(155deg,#E4B15C,var(--half) 60%);border-color:var(--half);box-shadow:0 14px 30px rgba(214,154,62,0.4);}
   .ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,0.5);transform:scale(0);animation:rippleFx .6s var(--ease) forwards;pointer-events:none;}
   @keyframes rippleFx{to{transform:scale(2.6);opacity:0;}}
 
