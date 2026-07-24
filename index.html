@@ -19,6 +19,7 @@
     --present:#3E8E82; --present-bg:#E4F1EE;
     --absent:#C1554A; --absent-bg:#F6E6E3;
     --half:#D69A3E; --half-bg:#F8EDD9;
+    --leave:#6B5CA5; --leave-bg:#ECE8F6;
     --muted:#8B8676; --brand:#F5A623;
     --ease:cubic-bezier(.22,1,.36,1); --ease-spring:cubic-bezier(.34,1.56,.64,1);
     --lift-1:0 1px 2px rgba(27,35,64,0.05), 0 6px 16px rgba(27,35,64,0.05);
@@ -90,11 +91,11 @@
   .card:hover{box-shadow:0 20px 55px rgba(27,35,64,0.22), 0 0 0 1px rgba(245,166,35,0.35);border-color:rgba(245,166,35,0.5);}
   h2.section-title{font-family:'Fraunces',serif;font-weight:600;font-size:1.25rem;margin:0 0 14px;}
 
-  input[type=text], input[type=email], input[type=password], select{
+  input[type=text], input[type=email], input[type=password], input[type=date], select, textarea{
     font-family:'Inter',sans-serif;font-size:0.92rem;padding:10px 12px;border:1.5px solid var(--paper-line);
     border-radius:7px;background:var(--paper);color:var(--ink);outline:none;transition:border-color .15s;width:100%;
   }
-  input:focus, select:focus{border-color:var(--ink);}
+  input:focus, select:focus, textarea:focus{border-color:var(--ink);}
   input.dmy-input{font-family:'JetBrains Mono',monospace;width:120px;letter-spacing:0.03em;}
   input.dmy-input.invalid{border-color:var(--absent);}
   label.field-label{font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--muted);text-transform:uppercase;display:block;margin-bottom:4px;}
@@ -141,6 +142,7 @@
   .status-badge.p{background:var(--present-bg);color:var(--present);box-shadow:0 10px 30px rgba(62,142,130,0.35);}
   .status-badge.a{background:var(--absent-bg);color:var(--absent);box-shadow:0 10px 30px rgba(193,85,74,0.35);}
   .status-badge.h{background:var(--half-bg);color:var(--half);box-shadow:0 10px 30px rgba(214,154,62,0.35);}
+  .status-badge.l{background:var(--leave-bg);color:var(--leave);box-shadow:0 10px 30px rgba(107,92,165,0.35);}
   .time-line{font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:var(--muted);margin:4px 0;}
   .time-line a{color:var(--ink);}
   .mark-buttons{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:10px;}
@@ -225,6 +227,7 @@
   .count-pill.p{background:var(--present-bg);color:var(--present);}
   .count-pill.a{background:var(--absent-bg);color:var(--absent);}
   .count-pill.h{background:var(--half-bg);color:var(--half);}
+  .count-pill.l{background:var(--leave-bg);color:var(--leave);}
   .emp-log-row td{background:var(--paper);padding:0;}
   .emp-log-inner{padding:14px 16px;}
   .log-list{max-height:340px;overflow-y:auto;border:1px solid var(--paper-line);border-radius:8px;background:#fff;}
@@ -258,6 +261,51 @@
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0) scale(1);}
   #admin-menu-backdrop{position:fixed;inset:0;z-index:9998;background:transparent;touch-action:none;}
   #admin-menu-backdrop.hidden{display:none;}
+
+  /* ---- Offline indicator ---- */
+  #offline-banner{
+    position:fixed;top:0;left:0;right:0;z-index:600;text-align:center;
+    font-family:'JetBrains Mono',monospace;font-size:0.76rem;font-weight:700;padding:9px 12px;
+    background:var(--half);color:#4a3512;transform:translateY(-110%);transition:transform .4s var(--ease-spring), background .3s ease, color .3s ease;
+  }
+  #offline-banner.show{transform:translateY(0);}
+  #offline-banner.online-flash{background:var(--present);color:#fff;}
+
+  /* ---- Undo toast ---- */
+  #undo-toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(14px) scale(.95);
+    background:linear-gradient(155deg,#28315a,var(--ink) 60%);color:#fff;padding:10px 12px 10px 18px;border-radius:10px;
+    font-size:0.85rem;box-shadow:0 14px 34px rgba(27,35,64,0.3);display:flex;align-items:center;gap:14px;
+    opacity:0;pointer-events:none;transition:all .35s var(--ease-spring);z-index:520;
+  }
+  #undo-toast.show{opacity:1;transform:translateX(-50%) translateY(0) scale(1);pointer-events:auto;}
+  #undo-toast .undo-btn{
+    background:none;border:none;color:var(--brand);font-weight:700;font-size:0.85rem;cursor:pointer;
+    padding:6px 10px;border-radius:6px;transition:background .2s ease;
+  }
+  #undo-toast .undo-btn:hover{background:rgba(245,166,35,0.15);}
+
+  button.btn.btn-danger{background:linear-gradient(155deg,#D66E62,var(--absent) 60%);border-color:var(--absent);box-shadow:0 6px 16px rgba(193,85,74,0.3);}
+  button.btn.btn-danger:hover{box-shadow:0 14px 30px rgba(193,85,74,0.4);}
+  button.btn.btn-success{background:linear-gradient(155deg,#4CA89B,var(--present) 60%);border-color:var(--present);box-shadow:0 6px 16px rgba(62,142,130,0.3);}
+  button.btn.btn-success:hover{box-shadow:0 14px 30px rgba(62,142,130,0.4);}
+
+  /* ---- Leave / off-day / notification ---- */
+  .off-day-badge{
+    display:inline-block;font-family:'Fraunces',serif;font-weight:700;font-size:1.35rem;
+    padding:12px 28px;border-radius:16px;margin:8px 0 6px;background:var(--paper);color:var(--muted);
+    border:1.5px dashed var(--paper-line);
+  }
+  #leave-notif-btn{position:relative;}
+  .notif-dot{
+    position:absolute;top:-3px;right:-3px;width:11px;height:11px;border-radius:50%;
+    background:var(--absent);border:2px solid var(--paper);display:none;
+  }
+  .notif-dot.show{display:block;animation:breathe 1.6s ease-in-out infinite;}
+  .leave-req-row{border:1px solid var(--paper-line);border-radius:12px;padding:14px;margin-bottom:10px;background:var(--paper);}
+  .leave-req-row .leave-req-meta{font-family:'JetBrains Mono',monospace;font-size:0.72rem;color:var(--muted);margin-bottom:6px;}
+  .leave-req-row .leave-req-reason{font-size:0.9rem;margin-bottom:10px;line-height:1.4;}
+  .leave-req-actions{display:flex;gap:8px;}
 
   /* ---- Skeleton loaders ---- */
   .skeleton{background:linear-gradient(90deg, var(--paper-line) 25%, #f6f3ea 42%, var(--paper-line) 63%);background-size:400% 100%;animation:shimmer 1.5s ease-in-out infinite;border-radius:6px;}
@@ -321,6 +369,10 @@
         <button class="icon-btn" id="admin-menu-btn" type="button" title="More">⋮</button>
         <div class="cal-popup hidden" id="admin-menu-popup" style="position:fixed;top:70px;right:16px;left:auto;width:230px;padding:8px;z-index:9999;"></div>
       </div>
+      <button class="icon-btn" id="leave-request-btn" type="button" title="Request leave" style="display:none;">📅+</button>
+      <button class="icon-btn" id="leave-notif-btn" type="button" title="Leave requests" style="display:none;">
+        ✉️<span class="notif-dot" id="leave-notif-dot"></span>
+      </button>
     </div>
   </header>
 
@@ -566,7 +618,7 @@
           </div>
         </div>
         <table class="summary" id="summary-table">
-          <thead><tr><th>Employee</th><th>Present</th><th>Absent</th><th>Half day</th></tr></thead>
+          <thead><tr><th>Employee</th><th>Present</th><th>Absent</th><th>Half day</th><th>Leave</th></tr></thead>
           <tbody id="summary-body"></tbody>
         </table>
         <div class="empty-state" id="rep-empty" style="display:none;">No records yet.</div>
@@ -575,7 +627,45 @@
     </section>
   </div>
 </div>
+<div id="offline-banner"></div>
 <div class="toast" id="toast"></div>
+<div id="undo-toast">
+  <span id="undo-toast-msg"></span>
+  <button type="button" class="undo-btn" id="undo-toast-btn">Undo</button>
+</div>
+<div class="modal-overlay hidden" id="confirm-modal-overlay">
+  <div class="modal-card" style="max-width:340px;text-align:center;">
+    <p id="confirm-modal-msg" style="font-size:0.95rem;margin:0 0 20px;line-height:1.5;"></p>
+    <div style="display:flex;gap:10px;justify-content:center;">
+      <button type="button" class="btn ghost" id="confirm-modal-cancel">Cancel</button>
+      <button type="button" class="btn btn-danger" id="confirm-modal-ok">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="leave-request-overlay">
+  <div class="modal-card" style="max-width:380px;">
+    <h2 class="section-title">Request Leave</h2>
+    <label class="field-label">Date</label>
+    <input type="date" id="leave-req-date" style="width:100%;margin-bottom:14px;">
+    <label class="field-label">Reason</label>
+    <textarea id="leave-req-reason" rows="3" style="width:100%;margin-bottom:18px;resize:vertical;" placeholder="e.g. Family function, not feeling well…"></textarea>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button type="button" class="btn ghost" id="leave-req-cancel">Cancel</button>
+      <button type="button" class="btn" id="leave-req-apply">Apply</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="leave-admin-overlay">
+  <div class="modal-card" style="max-width:420px;max-height:80vh;overflow-y:auto;">
+    <h2 class="section-title">Leave Requests</h2>
+    <div id="leave-admin-list"></div>
+    <div style="text-align:right;margin-top:8px;">
+      <button type="button" class="btn ghost" id="leave-admin-close">Close</button>
+    </div>
+  </div>
+</div>
 
 <!-- DELETE DATA — step 1: choose period + enter password -->
 <div class="modal-overlay hidden" id="delete-setup-overlay">
@@ -657,6 +747,7 @@ let expenseFormDateIso = todayISO();
 const AVATAR_COLORS = ['#4A6FA5','#8B5FBF','#C97064','#4F9D69','#B5793F','#5B8C8A','#9C5B8C'];
 
 function todayISO(){ return toISO(new Date()); }
+function isSunday(iso){ return new Date(iso + 'T00:00:00').getDay() === 0; }
 function toISO(d){
   const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
   return `${y}-${m}-${day}`;
@@ -677,6 +768,84 @@ function showToast(msg){
   t.textContent = msg; t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'), 2200);
 }
+
+// ---- Offline indicator ----
+(function(){
+  const banner = document.getElementById('offline-banner');
+  function updateStatus(){
+    if(!navigator.onLine){
+      banner.textContent = '📡 You\'re offline — some actions won\'t save until you\'re back online.';
+      banner.classList.remove('online-flash');
+      banner.classList.add('show');
+    } else if(banner.classList.contains('show')){
+      banner.textContent = '✅ Back online';
+      banner.classList.add('online-flash');
+      setTimeout(()=>{ banner.classList.remove('show'); }, 2000);
+    }
+  }
+  window.addEventListener('offline', updateStatus);
+  window.addEventListener('online', updateStatus);
+  if(!navigator.onLine) updateStatus();
+})();
+
+// ---- Custom confirm modal (replaces browser confirm()) ----
+function customConfirm(message){
+  return new Promise((resolve)=>{
+    const overlay = document.getElementById('confirm-modal-overlay');
+    document.getElementById('confirm-modal-msg').textContent = message;
+    overlay.classList.remove('hidden');
+    const okBtn = document.getElementById('confirm-modal-ok');
+    const cancelBtn = document.getElementById('confirm-modal-cancel');
+    function cleanup(result){
+      overlay.classList.add('hidden');
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      overlay.removeEventListener('click', onOverlay);
+      resolve(result);
+    }
+    function onOk(){ cleanup(true); }
+    function onCancel(){ cleanup(false); }
+    function onOverlay(e){ if(e.target === overlay) cleanup(false); }
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+    overlay.addEventListener('click', onOverlay);
+  });
+}
+
+// ---- Soft-delete with a 10s Undo window ----
+const suppressedIds = new Set();
+let pendingDelete = null;
+function finalizePendingDelete(){
+  if(!pendingDelete) return;
+  const { table, id, timeoutId } = pendingDelete;
+  clearTimeout(timeoutId);
+  sb.from(table).delete().eq('id', id).then(()=>{ suppressedIds.delete(id); });
+  pendingDelete = null;
+  document.getElementById('undo-toast').classList.remove('show');
+}
+function scheduleSoftDelete(table, id, message, rerender){
+  if(pendingDelete) finalizePendingDelete(); // only one undo window at a time
+  suppressedIds.add(id);
+  rerender();
+  const undoToast = document.getElementById('undo-toast');
+  document.getElementById('undo-toast-msg').textContent = message;
+  undoToast.classList.add('show');
+  const timeoutId = setTimeout(()=>{
+    sb.from(table).delete().eq('id', id).then(()=>{ suppressedIds.delete(id); });
+    pendingDelete = null;
+    undoToast.classList.remove('show');
+  }, 10000);
+  pendingDelete = { table, id, timeoutId, rerender };
+}
+document.getElementById('undo-toast-btn').addEventListener('click', ()=>{
+  if(!pendingDelete) return;
+  clearTimeout(pendingDelete.timeoutId);
+  suppressedIds.delete(pendingDelete.id);
+  const rerender = pendingDelete.rerender;
+  pendingDelete = null;
+  document.getElementById('undo-toast').classList.remove('show');
+  rerender();
+});
 
 // ---- Skeleton loader helpers ----
 function skeletonRows(n){
@@ -828,9 +997,12 @@ async function onLoggedIn(user){
   document.getElementById('export-tab-btn').style.display = profile.role === 'admin' ? 'inline-block' : 'none';
   document.getElementById('admin-menu-wrap').style.display = profile.role === 'admin' ? 'inline-block' : 'none';
   document.getElementById('logout-btn').style.display = profile.role === 'admin' ? 'inline-block' : 'none';
+  document.getElementById('leave-request-btn').style.display = profile.role === 'admin' ? 'none' : 'inline-block';
+  document.getElementById('leave-notif-btn').style.display = profile.role === 'admin' ? 'inline-block' : 'none';
 
   await loadAllProfiles();
   renderAttendancePanel();
+  if(profile.role === 'admin') refreshLeaveNotifDot();
 }
 
 async function loadAllProfiles(){
@@ -895,6 +1067,14 @@ async function renderAttendancePanel(){
   const dateLine = `<div class="status-date">${isoToDMY(todayISO())} · ${dayLabel(todayISO())}</div>`;
 
   if(!row){
+    if(isSunday(todayISO())){
+      hero.innerHTML = `
+        ${dateLine}
+        <div class="off-day-badge">Sunday · Office Off</div>
+        <div class="field-hint" style="margin-top:10px;">No attendance needed today.</div>
+      `;
+      return;
+    }
     hero.innerHTML = `
       ${dateLine}
       <div class="field-hint" style="margin:6px 0 14px;">Attendance not marked yet today.</div>
@@ -911,14 +1091,14 @@ async function renderAttendancePanel(){
   }
 
   const statusClass = row.status.toLowerCase();
-  const statusWord = row.status==='P' ? 'Present' : row.status==='A' ? 'Absent' : 'Half day';
+  const statusWord = row.status==='P' ? 'Present' : row.status==='A' ? 'Absent' : row.status==='H' ? 'Half day' : 'On Leave';
 
   let html = dateLine;
 
   // If this entry was corrected, show the original (struck through) status + its own time/location first
   if(row.corrected_from){
     const origClass = row.corrected_from.toLowerCase();
-    const origWord = row.corrected_from==='P' ? 'Present' : row.corrected_from==='A' ? 'Absent' : 'Half day';
+    const origWord = row.corrected_from==='P' ? 'Present' : row.corrected_from==='A' ? 'Absent' : row.corrected_from==='H' ? 'Half day' : 'On Leave';
     html += `<div class="status-badge ${origClass}" style="text-decoration:line-through;opacity:0.55;animation:none;">${origWord}</div>`;
     if(row.corrected_from_check_in_time){
       html += `<div class="time-line" style="opacity:0.6;">Checked in at ${fmtTime(row.corrected_from_check_in_time)} — <a href="${mapLink(row.corrected_from_check_in_lat,row.corrected_from_check_in_lng)}" target="_blank" rel="noopener">view location</a></div>`;
@@ -983,7 +1163,104 @@ function wireAttendanceMenu(currentStatus){
   document.addEventListener('click', (e)=>{ if(!menu.contains(e.target) && e.target !== menuBtn) close(); });
 }
 
-function statusWordFor(code){ return code==='P' ? 'Present' : code==='A' ? 'Absent' : 'Half day'; }
+function statusWordFor(code){ return code==='P' ? 'Present' : code==='A' ? 'Absent' : code==='H' ? 'Half day' : 'On Leave'; }
+
+// ---------- LEAVE REQUESTS ----------
+document.getElementById('leave-request-btn').addEventListener('click', ()=>{
+  document.getElementById('leave-req-date').value = todayISO();
+  document.getElementById('leave-req-reason').value = '';
+  document.getElementById('leave-request-overlay').classList.remove('hidden');
+});
+document.getElementById('leave-req-cancel').addEventListener('click', ()=>{
+  document.getElementById('leave-request-overlay').classList.add('hidden');
+});
+document.getElementById('leave-req-apply').addEventListener('click', async ()=>{
+  const date = document.getElementById('leave-req-date').value;
+  const reason = document.getElementById('leave-req-reason').value.trim();
+  if(!date){ showToast('Please pick a date.'); return; }
+  if(!reason){ showToast('Please enter a reason.'); return; }
+  const { error } = await sb.from('leave_requests').insert({
+    employee_id: currentProfile.id,
+    date,
+    reason,
+    status: 'pending'
+  });
+  if(error){ showToast('Could not send request: ' + error.message); return; }
+  document.getElementById('leave-request-overlay').classList.add('hidden');
+  showToast('Leave request sent to admin');
+});
+
+async function refreshLeaveNotifDot(){
+  const dot = document.getElementById('leave-notif-dot');
+  const { count, error } = await sb.from('leave_requests').select('id', { count: 'exact', head: true }).eq('status', 'pending');
+  if(error) return;
+  if(count && count > 0) dot.classList.add('show'); else dot.classList.remove('show');
+}
+
+document.getElementById('leave-notif-btn').addEventListener('click', openLeaveAdminModal);
+document.getElementById('leave-admin-close').addEventListener('click', ()=>{
+  document.getElementById('leave-admin-overlay').classList.add('hidden');
+});
+
+async function openLeaveAdminModal(){
+  document.getElementById('leave-admin-overlay').classList.remove('hidden');
+  await renderLeaveAdminList();
+}
+
+async function renderLeaveAdminList(){
+  const list = document.getElementById('leave-admin-list');
+  list.innerHTML = skeletonRows(2);
+  const { data, error } = await sb.from('leave_requests').select('*').eq('status', 'pending').order('date');
+  if(error){ list.innerHTML = `<div class="log-empty">Could not load requests.</div>`; return; }
+  if(!data || data.length === 0){
+    list.innerHTML = `<div class="log-empty">No pending leave requests.</div>`;
+    refreshLeaveNotifDot();
+    return;
+  }
+  list.innerHTML = data.map(req=>{
+    const emp = allProfiles.find(p=>p.id === req.employee_id);
+    const name = emp ? escapeHtml(emp.name) : 'Unknown employee';
+    return `
+      <div class="leave-req-row" data-id="${req.id}" data-emp="${req.employee_id}" data-date="${req.date}">
+        <div class="leave-req-meta">${name} · ${isoToDMY(req.date)} · ${dayLabel(req.date)}</div>
+        <div class="leave-req-reason">${escapeHtml(req.reason || '(no reason given)')}</div>
+        <div class="leave-req-actions">
+          <button type="button" class="btn btn-success small leave-accept-btn">Accept</button>
+          <button type="button" class="btn btn-danger small leave-deny-btn">Deny</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+  list.querySelectorAll('.leave-accept-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>handleLeaveDecision(btn.closest('.leave-req-row'), 'accepted'));
+  });
+  list.querySelectorAll('.leave-deny-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>handleLeaveDecision(btn.closest('.leave-req-row'), 'denied'));
+  });
+  refreshLeaveNotifDot();
+}
+
+async function handleLeaveDecision(row, decision){
+  const id = row.dataset.id;
+  const employeeId = row.dataset.emp;
+  const date = row.dataset.date;
+
+  const { error: updErr } = await sb.from('leave_requests').update({ status: decision }).eq('id', id);
+  if(updErr){ showToast('Could not update request: ' + updErr.message); return; }
+
+  if(decision === 'accepted'){
+    const { error: attErr } = await sb.from('attendance').upsert({
+      employee_id: employeeId,
+      date: date,
+      status: 'L'
+    }, { onConflict: 'employee_id,date' });
+    if(attErr){ showToast('Approved, but could not mark attendance: ' + attErr.message); }
+  }
+
+  showToast(decision === 'accepted' ? 'Leave request accepted' : 'Leave request denied');
+  await renderLeaveAdminList();
+  if(currentProfile.role === 'admin') renderAttendancePanel();
+}
 
 async function confirmAndCorrect(newStatus){
   if(!todaysRow) return;
@@ -1262,7 +1539,7 @@ function computeRange(period, refD){
 }
 function getRange(){ return computeRange(currentPeriod, refDate); }
 
-function statusWord(s){ return s==='P' ? 'Present' : s==='A' ? 'Absent' : 'Half day'; }
+function statusWord(s){ return s==='P' ? 'Present' : s==='A' ? 'Absent' : s==='H' ? 'Half day' : 'On Leave'; }
 
 async function renderReportsTab(){
   const body = document.getElementById('summary-body');
@@ -1286,8 +1563,8 @@ async function renderReportsTab(){
 
   visibleProfiles.forEach(p=>{
     const recs = rows.filter(r=>r.employee_id === p.id);
-    let pC=0,aC=0,hC=0;
-    recs.forEach(r=>{ if(r.status==='P') pC++; else if(r.status==='A') aC++; else if(r.status==='H') hC++; });
+    let pC=0,aC=0,hC=0,lC=0;
+    recs.forEach(r=>{ if(r.status==='P') pC++; else if(r.status==='A') aC++; else if(r.status==='H') hC++; else if(r.status==='L') lC++; });
 
     const tr = document.createElement('tr');
     tr.innerHTML = `
@@ -1298,6 +1575,7 @@ async function renderReportsTab(){
       <td><span class="count-pill p">${pC}</span></td>
       <td><span class="count-pill a">${aC}</span></td>
       <td><span class="count-pill h">${hC}</span></td>
+      <td><span class="count-pill l">${lC}</span></td>
     `;
     tr.querySelector('.name-cell').addEventListener('click', ()=>{
       expandedEmpId = (expandedEmpId===p.id) ? null : p.id;
@@ -1309,7 +1587,7 @@ async function renderReportsTab(){
       const logTr = document.createElement('tr');
       logTr.className = 'emp-log-row';
       const td = document.createElement('td');
-      td.colSpan = 4;
+      td.colSpan = 5;
       const sorted = recs.slice().sort((a,b)=> b.date.localeCompare(a.date));
       let html = `<div class="emp-log-inner"><div class="log-list">`;
       if(sorted.length === 0){
@@ -1484,7 +1762,7 @@ async function renderExpensesPanel(){
     const listEl = document.getElementById('expense-own-list');
     const empty = document.getElementById('expense-own-empty');
     const card = document.getElementById('expense-own-list-card');
-    const sorted = rows.slice().sort((a,b)=> b.date.localeCompare(a.date));
+    const sorted = rows.filter(r=>!suppressedIds.has(r.id)).sort((a,b)=> b.date.localeCompare(a.date));
     if(sorted.length === 0){
       card.style.display = 'none';
       empty.style.display = 'block';
@@ -1506,10 +1784,8 @@ async function renderExpensesPanel(){
     listEl.querySelectorAll('.expense-delete-link').forEach(a=>{
       a.addEventListener('click', async (e)=>{
         e.preventDefault();
-        if(!confirm('Delete this expense entry?')) return;
-        const { error } = await sb.from('expenses').delete().eq('id', a.dataset.id);
-        if(error){ showToast('Could not delete: ' + error.message); return; }
-        renderExpensesPanel();
+        if(!(await customConfirm('Delete this expense entry? You can undo this for 10 seconds after.'))) return;
+        scheduleSoftDelete('expenses', a.dataset.id, 'Expense deleted', renderExpensesPanel);
       });
     });
   }
@@ -1691,7 +1967,7 @@ async function renderTimesheetPanel(){
     const listEl = document.getElementById('ts-own-list');
     const empty = document.getElementById('ts-own-empty');
     const card = document.getElementById('ts-own-list-card');
-    const sorted = rows.slice().sort((a,b)=> b.date.localeCompare(a.date) || a.start_time.localeCompare(b.start_time));
+    const sorted = rows.filter(r=>!suppressedIds.has(r.id)).sort((a,b)=> b.date.localeCompare(a.date) || a.start_time.localeCompare(b.start_time));
     if(sorted.length === 0){
       card.style.display = 'none';
       empty.style.display = 'block';
@@ -1713,10 +1989,8 @@ async function renderTimesheetPanel(){
     listEl.querySelectorAll('.ts-delete-link').forEach(a=>{
       a.addEventListener('click', async (e)=>{
         e.preventDefault();
-        if(!confirm('Delete this work entry?')) return;
-        const { error } = await sb.from('timesheets').delete().eq('id', a.dataset.id);
-        if(error){ showToast('Could not delete: ' + error.message); return; }
-        renderTimesheetPanel();
+        if(!(await customConfirm('Delete this work entry? You can undo this for 10 seconds after.'))) return;
+        scheduleSoftDelete('timesheets', a.dataset.id, 'Work entry deleted', renderTimesheetPanel);
       });
     });
   }
@@ -1915,7 +2189,7 @@ async function generatePdfForRange(startIso, endIso, label, statusEl){
     } else {
       const body = attRows.map(r => [
         isoToDMY(r.date),
-        r.status === 'P' ? 'Present' : r.status === 'A' ? 'Absent' : 'Half day',
+        r.status === 'P' ? 'Present' : r.status === 'A' ? 'Absent' : r.status === 'H' ? 'Half day' : 'Leave',
         r.check_in_time ? fmtTime(r.check_in_time) : '—',
         locationCellText(r.check_in_lat, r.check_in_lng),
         r.check_out_time ? fmtTime(r.check_out_time) : '—',
