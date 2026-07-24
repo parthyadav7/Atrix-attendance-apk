@@ -181,6 +181,14 @@
   }
   button.icon-btn:hover{border-color:var(--ink);color:var(--ink);transform:translateY(-2px);}
   button.icon-btn:active{transform:translateY(0) scale(.92);}
+  button.btn-apply-leave{
+    width:auto;height:auto;font-family:'Fraunces',serif;font-weight:700;font-size:0.8rem;letter-spacing:0.01em;
+    padding:8px 16px;border-radius:20px;border:1.5px solid var(--leave);background:var(--leave-bg);color:var(--leave);
+    cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
+    box-shadow:0 3px 10px rgba(107,92,165,0.25);transition:transform .2s var(--ease-spring), box-shadow .2s ease;
+  }
+  button.btn-apply-leave:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 8px 20px rgba(107,92,165,0.35);color:var(--leave);border-color:var(--leave);}
+  button.btn-apply-leave:active{transform:translateY(0) scale(.96);}
   .edit-form{display:flex;gap:10px;align-items:center;flex-wrap:wrap;width:100%;background:var(--paper);border-radius:8px;padding:12px;margin:6px 0;}
   .photo-input-wrap input[type=file]{font-family:'Inter',sans-serif;font-size:0.78rem;max-width:170px;width:auto;}
   .field-hint{font-family:'JetBrains Mono',monospace;font-size:0.68rem;color:var(--muted);}
@@ -369,7 +377,7 @@
         <button class="icon-btn" id="admin-menu-btn" type="button" title="More">⋮</button>
         <div class="cal-popup hidden" id="admin-menu-popup" style="position:fixed;top:70px;right:16px;left:auto;width:230px;padding:8px;z-index:9999;"></div>
       </div>
-      <button class="icon-btn" id="leave-request-btn" type="button" title="Request leave" style="display:none;">📅+</button>
+      <button class="btn-apply-leave" id="leave-request-btn" type="button" title="Request leave" style="display:none;">📅 Apply Leave</button>
       <button class="icon-btn" id="leave-notif-btn" type="button" title="Leave requests" style="display:none;">
         ✉️<span class="notif-dot" id="leave-notif-dot"></span>
       </button>
@@ -1244,6 +1252,12 @@ async function handleLeaveDecision(row, decision){
   const id = row.dataset.id;
   const employeeId = row.dataset.emp;
   const date = row.dataset.date;
+
+  const confirmMsg = decision === 'accepted'
+    ? 'The employee will get the leave if you accept it. Do you want to accept this leave request?'
+    : "The employee's leave will be cancelled if you deny it. Do you want to deny this leave request?";
+  const ok = confirm(confirmMsg);
+  if(!ok) return;
 
   const { error: updErr } = await sb.from('leave_requests').update({ status: decision }).eq('id', id);
   if(updErr){ showToast('Could not update request: ' + updErr.message); return; }
