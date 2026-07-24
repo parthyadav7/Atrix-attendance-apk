@@ -320,7 +320,7 @@
       <button class="btn ghost small" id="logout-btn" type="button">Log out</button>
       <div class="date-field-wrap" id="admin-menu-wrap" style="display:none;">
         <button class="icon-btn" id="admin-menu-btn" type="button" title="More">⋮</button>
-        <div class="cal-popup hidden" id="admin-menu-popup" style="position:fixed;top:70px;right:16px;left:auto;width:230px;padding:8px;"></div>
+        <div class="cal-popup hidden" id="admin-menu-popup" style="position:fixed;top:70px;right:16px;left:auto;width:230px;padding:8px;z-index:9999;"></div>
       </div>
     </div>
   </header>
@@ -1247,7 +1247,7 @@ async function renderReportsTab(){
   const body = document.getElementById('summary-body');
   const empty = document.getElementById('rep-empty');
   const table = document.getElementById('summary-table');
-  body.innerHTML = skeletonTableRows(4,4);
+  body.innerHTML = '';
 
   const {startIso, endIso, label} = getRange();
   document.getElementById('range-label').textContent = label;
@@ -1998,6 +1998,16 @@ const DELETE_PASSWORD = 'kdshinde';
 let delPeriod = 'weekly';
 let delRefDate = new Date();
 let pendingDeleteRange = null;
+
+// Move the admin dropdown to a direct child of <body>. This guarantees it
+// always paints above every other element, regardless of any parent's
+// backdrop-filter / transform / animation creating its own stacking context.
+(function(){
+  const popup = document.getElementById('admin-menu-popup');
+  if (popup && popup.parentElement !== document.body){
+    document.body.appendChild(popup);
+  }
+})();
 
 function openAdminMenu(){
   const popup = document.getElementById('admin-menu-popup');
