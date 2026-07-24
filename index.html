@@ -31,6 +31,12 @@
     margin:0; background:var(--paper);
     font-family:'Inter',sans-serif; color:var(--ink); min-height:100vh;
     overflow-x:hidden;position:relative;touch-action:manipulation;
+    -webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;
+    -webkit-touch-callout:none;
+  }
+  input, textarea{
+    -webkit-user-select:text;-moz-user-select:text;-ms-user-select:text;user-select:text;
+    -webkit-touch-callout:default;
   }
   .wrap{max-width:960px;margin:0 auto;padding:24px 20px 80px;position:relative;z-index:1;}
   header.hero{
@@ -941,21 +947,32 @@ function getLocation(){
     if(!('geolocation' in navigator)){ reject(new Error('Location is not supported on this device/browser.')); return; }
     let best = null;
     let watchId = null;
-    const GOOD_ENOUGH_METERS = 20;   // stop early once we get a fix this precise
-    const MAX_WAIT_MS = 10000;       // otherwise keep refining for up to 10s
+    const GOOD_ENOUGH_METERS = 20;    // stop early once we get a fix this precise
+    const ACCEPTABLE_METERS = 50;     // minimum accuracy we're willing to accept at all — no rough/approximate fixes
+    const MAX_WAIT_MS = 45000;        // take as long as needed for an accurate GPS fix, don't rush it
     let settled = false;
+
     const finish = (err)=>{
-      if(settled) return; settled = true;
+      if(settled) return;
+      if(best && best.coords.accuracy <= ACCEPTABLE_METERS){
+        settled = true;
+        clearTimeout(timer);
+        if(watchId !== null) navigator.geolocation.clearWatch(watchId);
+        resolve({lat: best.coords.latitude, lng: best.coords.longitude, accuracy: best.coords.accuracy});
+        return;
+      }
+      if(err && err.code === err.PERMISSION_DENIED){
+        settled = true;
+        clearTimeout(timer);
+        if(watchId !== null) navigator.geolocation.clearWatch(watchId);
+        reject(new Error('Location permission is blocked for this site. Tap the lock/info icon next to the address bar → Permissions → allow Location, then try again.'));
+        return;
+      }
+      // Timed out without an accurate-enough fix — reject rather than sending an approximate/nearest location.
+      settled = true;
       clearTimeout(timer);
       if(watchId !== null) navigator.geolocation.clearWatch(watchId);
-      if(best){ resolve({lat: best.coords.latitude, lng: best.coords.longitude, accuracy: best.coords.accuracy}); return; }
-      if(err){
-        if(err.code === err.PERMISSION_DENIED) reject(new Error('Location permission is blocked for this site. Tap the lock/info icon next to the address bar → Permissions → allow Location, then try again.'));
-        else if(err.code === err.TIMEOUT) reject(new Error('Location request timed out. Try again in an open area.'));
-        else reject(new Error('Could not get your location. Please try again.'));
-      } else {
-        reject(new Error('Could not get your location. Please try again.'));
-      }
+      reject(new Error('Could not get an accurate location. Please make sure GPS/Location is on and you have a clear view of the sky, then try again.'));
     };
     const timer = setTimeout(()=>finish(null), MAX_WAIT_MS);
     watchId = navigator.geolocation.watchPosition(
@@ -2555,6 +2572,19 @@ document.addEventListener('click', (e)=>{
   btn.appendChild(ripple);
   setTimeout(()=>ripple.remove(), 650);
 });
+</script>
+<script>
+// Block copying text out of the app (right-click menu, copy/cut, drag).
+// Inputs/textareas are left alone so users can still type and edit normally.
+(function(){
+  function isEditable(el){
+    return el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable);
+  }
+  document.addEventListener('contextmenu', (e)=>{ if(!isEditable(e.target)) e.preventDefault(); });
+  document.addEventListener('copy', (e)=>{ if(!isEditable(e.target)) e.preventDefault(); });
+  document.addEventListener('cut', (e)=>{ if(!isEditable(e.target)) e.preventDefault(); });
+  document.addEventListener('dragstart', (e)=>{ if(!isEditable(e.target)) e.preventDefault(); });
+})();
 </script>
 </body>
 </html>
