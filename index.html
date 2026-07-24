@@ -256,6 +256,8 @@
     opacity:0;pointer-events:none;transition:all .35s var(--ease-spring);font-weight:500;z-index:50;
   }
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0) scale(1);}
+  #admin-menu-backdrop{position:fixed;inset:0;z-index:9998;background:transparent;touch-action:none;}
+  #admin-menu-backdrop.hidden{display:none;}
 
   /* ---- Skeleton loaders ---- */
   .skeleton{background:linear-gradient(90deg, var(--paper-line) 25%, #f6f3ea 42%, var(--paper-line) 63%);background-size:400% 100%;animation:shimmer 1.5s ease-in-out infinite;border-radius:6px;}
@@ -825,6 +827,7 @@ async function onLoggedIn(user){
   document.getElementById('team-tab-btn').style.display = profile.role === 'admin' ? 'inline-block' : 'none';
   document.getElementById('export-tab-btn').style.display = profile.role === 'admin' ? 'inline-block' : 'none';
   document.getElementById('admin-menu-wrap').style.display = profile.role === 'admin' ? 'inline-block' : 'none';
+  document.getElementById('logout-btn').style.display = profile.role === 'admin' ? 'inline-block' : 'none';
 
   await loadAllProfiles();
   renderAttendancePanel();
@@ -2036,12 +2039,32 @@ let pendingDeleteRange = null;
   }
 })();
 
+function showAdminMenuBackdrop(){
+  let bd = document.getElementById('admin-menu-backdrop');
+  if(!bd){
+    bd = document.createElement('div');
+    bd.id = 'admin-menu-backdrop';
+    bd.addEventListener('click', (e)=>{ e.stopPropagation(); closeAdminMenu(); });
+    bd.addEventListener('touchmove', (e)=>{ e.preventDefault(); }, { passive: false });
+    document.body.appendChild(bd);
+  }
+  bd.classList.remove('hidden');
+}
+function hideAdminMenuBackdrop(){
+  const bd = document.getElementById('admin-menu-backdrop');
+  if(bd) bd.classList.add('hidden');
+}
+function closeAdminMenu(){
+  document.getElementById('admin-menu-popup').classList.add('hidden');
+  hideAdminMenuBackdrop();
+}
 function openAdminMenu(){
   const popup = document.getElementById('admin-menu-popup');
   popup.innerHTML = `<button type="button" id="delete-data-menu-item" style="width:100%;text-align:left;background:var(--paper);border:1.5px solid var(--paper-line);border-radius:8px;padding:12px 14px;color:var(--absent);font-weight:600;font-size:0.85rem;cursor:pointer;display:flex;align-items:center;gap:8px;">🗑&nbsp; Delete data from database</button>`;
   popup.classList.remove('hidden');
+  showAdminMenuBackdrop();
   document.getElementById('delete-data-menu-item').addEventListener('click', ()=>{
-    popup.classList.add('hidden');
+    closeAdminMenu();
     openDeleteSetup();
   });
 }
@@ -2049,12 +2072,12 @@ document.getElementById('admin-menu-btn').addEventListener('click', (e)=>{
   e.stopPropagation();
   const popup = document.getElementById('admin-menu-popup');
   if(popup.classList.contains('hidden')) openAdminMenu();
-  else popup.classList.add('hidden');
+  else closeAdminMenu();
 });
 document.addEventListener('click', (e)=>{
   const popup = document.getElementById('admin-menu-popup');
   const btn = document.getElementById('admin-menu-btn');
-  if(!popup.contains(e.target) && e.target !== btn) popup.classList.add('hidden');
+  if(!popup.contains(e.target) && e.target !== btn) closeAdminMenu();
 });
 
 function openDeleteSetup(){
