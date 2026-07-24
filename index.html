@@ -1035,9 +1035,10 @@ async function correctStatus(newStatus){
 }
 
 async function markCheckIn(status){
+  const hero = document.getElementById('status-hero');
   const geoStatus = document.getElementById('geo-status');
-  geoStatus.className = 'geo-status working';
-  geoStatus.textContent = 'Getting your location…';
+  hero.innerHTML = `<div class="status-date">${isoToDMY(todayISO())} · ${dayLabel(todayISO())}</div>${skeletonHero()}`;
+  geoStatus.textContent = ''; geoStatus.className = 'geo-status';
   try{
     const loc = await getLocation();
     const { error } = await sb.from('attendance').upsert({
@@ -1048,31 +1049,33 @@ async function markCheckIn(status){
       check_in_lat: loc.lat,
       check_in_lng: loc.lng
     }, { onConflict: 'employee_id,date' });
-    if(error){ geoStatus.className='geo-status error'; geoStatus.textContent = 'Could not save: ' + error.message; return; }
-    geoStatus.textContent = ''; geoStatus.className='geo-status';
+    if(error){ showToast('Could not save: ' + error.message); renderAttendancePanel(); return; }
     showToast(status === 'P' ? 'Marked Present' : 'Marked Half day');
     renderAttendancePanel();
   }catch(err){
-    geoStatus.className = 'geo-status error';
-    geoStatus.textContent = err.message;
+    showToast(err.message);
+    renderAttendancePanel();
   }
 }
 
 async function markSimple(status){
+  const hero = document.getElementById('status-hero');
+  hero.innerHTML = `<div class="status-date">${isoToDMY(todayISO())} · ${dayLabel(todayISO())}</div>${skeletonHero()}`;
   const { error } = await sb.from('attendance').upsert({
     employee_id: currentProfile.id,
     date: todayISO(),
     status
   }, { onConflict: 'employee_id,date' });
-  if(error){ showToast('Could not save: ' + error.message); return; }
+  if(error){ showToast('Could not save: ' + error.message); renderAttendancePanel(); return; }
   showToast(status === 'A' ? 'Marked Absent' : 'Marked Half day');
   renderAttendancePanel();
 }
 
 async function markCheckout(){
+  const hero = document.getElementById('status-hero');
   const geoStatus = document.getElementById('geo-status');
-  geoStatus.className = 'geo-status working';
-  geoStatus.textContent = 'Getting your location…';
+  hero.innerHTML = `<div class="status-date">${isoToDMY(todayISO())} · ${dayLabel(todayISO())}</div>${skeletonHero()}`;
+  geoStatus.textContent = ''; geoStatus.className = 'geo-status';
   try{
     const loc = await getLocation();
     const { error } = await sb.from('attendance').update({
@@ -1080,13 +1083,12 @@ async function markCheckout(){
       check_out_lat: loc.lat,
       check_out_lng: loc.lng
     }).eq('employee_id', currentProfile.id).eq('date', todayISO());
-    if(error){ geoStatus.className='geo-status error'; geoStatus.textContent = 'Could not save: ' + error.message; return; }
-    geoStatus.textContent = ''; geoStatus.className='geo-status';
+    if(error){ showToast('Could not save: ' + error.message); renderAttendancePanel(); return; }
     showToast('Logged out');
     renderAttendancePanel();
   }catch(err){
-    geoStatus.className = 'geo-status error';
-    geoStatus.textContent = err.message;
+    showToast(err.message);
+    renderAttendancePanel();
   }
 }
 
